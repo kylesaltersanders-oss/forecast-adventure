@@ -1,0 +1,850 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Forecast Adventure</title><style>:root{--color-fg:#26251f;--color-fg-muted:#65625a;--color-bg:#f7f6f3;--color-panel:#fff;--color-border-line:#dedbd3;--color-ok:#1d7a46;--color-warn:#a85f00;--color-bad:#b3261e;--font-anthropic-sans:system-ui,-apple-system,"Segoe UI",sans-serif;--font-anthropic-serif:Georgia,"Times New Roman",serif;--cds-font-size-caption:13px;--cds-font-size-body:15px;--cds-font-size-heading:18px;--cds-font-size-title:26px;--cds-font-weight-medium:600;--cds-gap-xs:4px;--cds-gap-sm:8px;--cds-gap-md:12px;--cds-gap-lg:20px;--cds-pad-xs:4px;--cds-pad-sm:8px;--cds-pad-md:12px;--cds-pad-lg:16px;--cds-radius:8px;--cds-dur-slow:.3s}
+@media (prefers-color-scheme:dark){:root{--color-fg:#ece9e1;--color-fg-muted:#a8a498;--color-bg:#1c1b18;--color-panel:#26251f;--color-border-line:#3d3b34;--color-ok:#5cc98a;--color-warn:#e9a94b;--color-bad:#f0776c}}
+[hidden]{display:none!important}
+body{margin:0;background:var(--color-bg);font-size:15px;line-height:1.4;padding:16px}
+</style></head><body><style>
+  .af { display: grid; gap: var(--cds-gap-lg); font-family: var(--font-anthropic-sans); color: var(--color-fg); max-width: 76rem; margin-inline: auto; }
+  .af-head { display: grid; gap: var(--cds-gap-xs); }
+  .af-title { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: var(--cds-font-size-title); margin: 0; text-wrap: balance; }
+  .af-takeaway { margin: 0; font-size: var(--cds-font-size-heading); min-height: 1.4em; max-width: 60ch; }
+  .af-h2 { font-size: var(--cds-font-size-heading); font-weight: var(--cds-font-weight-medium); margin: 0; }
+  .af-note { margin: 0; color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); max-width: 70ch; }
+  .af-panel { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-lg); display: grid; gap: var(--cds-gap-sm); min-width: 0; }
+  .af-scroll { overflow-x: auto; min-width: 0; }
+  .af-matrix { border-collapse: collapse; width: 100%; font-size: var(--cds-font-size-body); font-variant-numeric: tabular-nums; }
+  .af-matrix th, .af-matrix td { text-align: left; padding: var(--cds-pad-xs) var(--cds-pad-sm); border-bottom: 1px solid var(--color-border-line); white-space: nowrap; }
+  .af-matrix thead th { color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); font-weight: var(--cds-font-weight-medium); }
+  .af-matrix tbody tr:last-child th, .af-matrix tbody tr:last-child td { border-bottom: 0; }
+  .af-matrix .af-day { font-weight: var(--cds-font-weight-medium); }
+  .af-matrix tbody { min-height: 14rem; }
+  .af-light { display: inline-flex; align-items: center; gap: 0.4rem; white-space: nowrap; }
+  .af-dot { width: 0.75rem; height: 0.75rem; border-radius: 50%; flex: none; background: var(--color-fg-muted); }
+  .af-go .af-dot { background: var(--color-ok); }
+  .af-maybe .af-dot { background: var(--color-warn); border-radius: 2px; transform: rotate(45deg) scale(0.85); }
+  .af-no .af-dot { background: var(--color-bad); border-radius: 2px; }
+  .af-no .af-word { color: var(--color-fg-muted); }
+  .af-days { display: grid; gap: var(--cds-gap-md); grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr)); }
+  .af-card { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-lg); display: grid; gap: var(--cds-gap-sm); align-content: start; min-width: 0; }
+  .af-card-head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--cds-gap-sm); flex-wrap: wrap; }
+  .af-card-title { margin: 0; font-size: var(--cds-font-size-heading); font-weight: var(--cds-font-weight-medium); }
+  .af-tag { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); border: 1px solid var(--color-border-line); border-radius: 999px; padding: 0 var(--cds-pad-sm); }
+  .af-best { margin: 0; display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--cds-gap-xs) var(--cds-gap-sm); font-family: var(--font-anthropic-serif); font-size: var(--cds-font-size-title); }
+  .af-best .af-dot { width: 0.9rem; height: 0.9rem; }
+  .af-best-why { font-family: var(--font-anthropic-sans); font-size: var(--cds-font-size-body); color: var(--color-fg-muted); }
+  .af-list { list-style: none; margin: 0; padding: 0; display: grid; }
+  .af-row { display: grid; grid-template-columns: 4.75rem minmax(0, 1fr); column-gap: var(--cds-gap-sm); row-gap: 0.1rem; padding-block: var(--cds-pad-sm); border-top: 1px solid var(--color-border-line); }
+  .af-row .af-light { grid-row: 1 / span 2; align-self: start; padding-top: 0.1rem; }
+  .af-what { display: flex; flex-wrap: wrap; gap: 0 var(--cds-gap-xs); align-items: baseline; min-width: 0; }
+  .af-sport { font-weight: var(--cds-font-weight-medium); }
+  .af-site { color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); }
+  .af-why { margin: 0; font-size: var(--cds-font-size-caption); min-width: 0; }
+  .af-far .af-word, .af-far .af-why { color: var(--color-fg-muted); }
+  .af-rules { display: grid; gap: var(--cds-gap-md); grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr)); }
+  .af-rule { display: grid; gap: var(--cds-gap-xs); align-content: start; min-width: 0; }
+  .af-rule h3 { margin: 0; font-size: var(--cds-font-size-body); font-weight: var(--cds-font-weight-medium); }
+  .af-rule p { margin: 0; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+  .af-target-entry { display: flex; gap: var(--cds-gap-sm); flex-wrap: wrap; }
+  .af-target-input { flex: 1 1 14rem; min-width: 0; font: inherit; color: var(--color-fg); background: var(--color-bg); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-xs) var(--cds-pad-sm); }
+  .af-target-add, .af-remove { font: inherit; color: var(--color-fg); background: var(--color-bg); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-xs) var(--cds-pad-md); cursor: pointer; }
+  .af-target-add { font-weight: var(--cds-font-weight-medium); }
+  .af-remove { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); padding: 0 var(--cds-pad-sm); flex: none; }
+  .af-target-add:disabled, .af-remove:disabled { opacity: .5; cursor: default; }
+  .af-target-input:focus-visible, .af-target-add:focus-visible, .af-remove:focus-visible { outline: 2px solid var(--color-fg); outline-offset: 2px; }
+  .af-target-msg:empty { display: none; }
+  .af-targets { list-style: none; margin: 0; padding: 0; display: grid; }
+  .af-target { display: grid; gap: var(--cds-gap-xs); padding-block: var(--cds-pad-sm); border-top: 1px solid var(--color-border-line); min-width: 0; }
+  .af-target-top { display: flex; justify-content: space-between; align-items: baseline; gap: var(--cds-gap-sm); }
+  .af-target-name { display: flex; flex-wrap: wrap; gap: 0 var(--cds-gap-xs); align-items: baseline; min-width: 0; }
+  .af-target-empty, .af-queued { margin: 0; color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); }
+  .af-target-empty { padding-block: var(--cds-pad-sm); border-top: 1px solid var(--color-border-line); }
+  .af-strip { display: flex; flex-wrap: wrap; gap: var(--cds-gap-xs) var(--cds-gap-md); }
+  .af-chip { display: inline-flex; align-items: center; gap: 0.35rem; font-size: var(--cds-font-size-caption); }
+  .af-chip-day { color: var(--color-fg-muted); }
+  .af-arty-tag { display: inline-block; margin-left: var(--cds-gap-xs); font-size: var(--cds-font-size-caption); font-weight: var(--cds-font-weight-medium); color: var(--color-bg); background: var(--color-fg); border-radius: 999px; padding: 0 var(--cds-pad-sm); white-space: nowrap; }
+  .af-card-head .af-arty-tag { margin-left: 0; }
+  .af-matrix tr.af-arty th.af-day { box-shadow: inset 3px 0 0 var(--color-fg); }
+  .af-card.af-arty { border-color: var(--color-fg); border-width: 2px; }
+  .af-booked { grid-column: 2; margin: 0.15rem 0 0; font-size: 1.05rem; font-weight: 700; }
+  .af-book { grid-column: 2; margin: 0; display: flex; flex-wrap: wrap; gap: 0 var(--cds-gap-md); font-size: var(--cds-font-size-caption); }
+  .af-link { color: var(--color-fg); text-decoration: underline; text-underline-offset: 2px; }
+  .af-link:focus-visible { outline: 2px solid var(--color-fg); outline-offset: 2px; }
+  .af-rule .af-link { font-size: var(--cds-font-size-caption); }
+  .af-wx { color: var(--color-fg-muted); }
+  .af-wx-icon { display: inline-block; width: 1.4em; font-size: 1.05em; }
+  .af-card { cursor: pointer; }
+  .af-card:hover { border-color: var(--color-fg-muted); }
+  .af-card.af-picked { outline: 2px solid var(--color-fg); outline-offset: -2px; }
+  .af-profiles { display: grid; gap: var(--cds-gap-sm); grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr)); }
+  .af-profile { display: grid; gap: 0.1rem; color: var(--color-fg); text-decoration: none; background: var(--color-bg); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-sm) var(--cds-pad-md); min-height: 2.75rem; }
+  .af-profile:hover { border-color: var(--color-fg); }
+  .af-profile:focus-visible { outline: 2px solid var(--color-fg); outline-offset: 2px; }
+  .af-climbing-body { display: grid; gap: var(--cds-gap-lg); min-height: 20rem; min-width: 0; }
+  .af-chips { display: flex; flex-wrap: wrap; gap: var(--cds-gap-xs); }
+  .af-chipbtn { font: inherit; font-size: var(--cds-font-size-caption); color: var(--color-fg); background: var(--color-bg); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); min-height: 2.75rem; padding: var(--cds-pad-xs) var(--cds-pad-sm); cursor: pointer; display: inline-flex; align-items: center; gap: 0.4rem; }
+  .af-chipbtn:hover, .af-climb:hover { border-color: var(--color-fg); }
+  .af-chipbtn.af-on { background: var(--color-fg); color: var(--color-bg); border-color: var(--color-fg); }
+  .af-chipbtn.af-on .af-dot { box-shadow: 0 0 0 2px var(--color-bg); }
+  .af-lead { display: grid; gap: var(--cds-gap-xs); }
+  .af-lead-main { margin: 0; font-family: var(--font-anthropic-serif); font-weight: 400; font-size: var(--cds-font-size-title); }
+  .af-cgroup { display: grid; gap: var(--cds-gap-xs); min-width: 0; }
+  .af-cgroup-h { margin: 0; font-size: var(--cds-font-size-body); font-weight: var(--cds-font-weight-medium); }
+  .af-climbs { display: grid; gap: var(--cds-gap-sm); grid-template-columns: repeat(auto-fill, minmax(min(100%, 15rem), 1fr)); margin-top: var(--cds-gap-xs); }
+  .af-climb { font: inherit; color: var(--color-fg); text-align: left; background: var(--color-bg); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-sm) var(--cds-pad-md); min-height: 2.75rem; cursor: pointer; display: grid; gap: 0.2rem; align-content: start; min-width: 0; }
+  .af-climb.af-on { outline: 2px solid var(--color-fg); outline-offset: -2px; }
+  .af-climb.af-dim .af-climb-name { color: var(--color-fg-muted); }
+  .af-climb-top { display: flex; align-items: center; justify-content: space-between; gap: var(--cds-gap-sm); flex-wrap: wrap; }
+  .af-climb-name { font-weight: var(--cds-font-weight-medium); }
+  .af-top-tag { margin-left: 0; }
+  .af-detail { display: grid; gap: var(--cds-gap-sm); border-top: 1px solid var(--color-border-line); padding-top: var(--cds-pad-md); min-width: 0; }
+  .af-detail-head { display: flex; flex-wrap: wrap; align-items: center; gap: var(--cds-gap-xs) var(--cds-gap-sm); }
+  .af-why-big { margin: 0; }
+  .af-facts { display: grid; gap: var(--cds-gap-sm); grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr)); }
+  .af-fact { display: grid; gap: 0.1rem; align-content: start; min-width: 0; font-size: var(--cds-font-size-body); }
+  .af-fact-k { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+  .af-chipbtn:focus-visible, .af-climb:focus-visible { outline: 2px solid var(--color-fg); outline-offset: 2px; }
+  .af [data-dash-source-state=refreshing] { opacity: .5; transition: opacity var(--cds-dur-slow); }
+</style>
+
+<div class="af">
+  <header class="af-head">
+    <h1 class="af-title">Forecast Adventure</h1>
+    <p class="af-subtitle" style="margin:0;color:var(--color-fg-muted);font-family:var(--font-anthropic-sans)">Seven-day adventure outlook</p>
+    <p class="af-note" id="af-fc">Checking the live forecast.</p>
+    <p class="af-takeaway af-wait" data-source="picks"></p>
+  </header>
+
+  <section class="af-panel" id="lights">
+    <h2 class="af-h2">Traffic lights, next seven days</h2>
+    <p class="af-note">Green circle is go, amber diamond is maybe, red square is no. Skydiving and climbing show the better of their two sites. Wednesdays are marked as busy days.</p>
+    <div class="af-scroll af-wait" data-source="outlook picks sydney">
+      <table class="af-matrix">
+        <thead>
+          <tr><th scope="col">Day</th><th scope="col">Sydney</th><th scope="col">Best pick</th><th scope="col">Skydiving</th><th scope="col">Kiteboarding</th><th scope="col">Climbing</th><th scope="col">Tennis</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="days" style="display:grid;gap:var(--cds-gap-sm)">
+    <h2 class="af-h2">Why, day by day</h2>
+    <div class="af-days" data-source="outlook picks tennis"></div>
+  </section>
+
+  <section class="af-panel" id="climbing">
+    <h2 class="af-h2">Climbing</h2>
+    <p class="af-note">Pick a day, or click a day tile above. Every climb is lit for that day, best first, using the same go, maybe and no rules as the lights. Drive times are rough estimates. To add or change climbs, ask Claude.</p>
+    <div class="af-profiles" id="climber-profiles">
+      <div class="af-profile"><span class="af-climb-name">Kyle</span><span class="af-site">Ascents <span class="af-pv" data-source="climbers" data-where="id=kyle" data-field="ascents">—</span>, <span class="af-pv" data-source="climbers" data-where="id=kyle" data-field="distance_m">—</span> m climbed</span><span class="af-site">Hardest sport <span class="af-pv" data-source="climbers" data-where="id=kyle" data-field="hardest_grade">—</span>, <span class="af-pv" data-source="climbers" data-where="id=kyle" data-field="hardest_route">—</span></span><span class="af-site af-pv" data-source="climbers" data-where="id=kyle" data-field="styles">—</span></div>
+      <div class="af-profile"><span class="af-climb-name">Maria</span><span class="af-site">Ascents <span class="af-pv" data-source="climbers" data-where="id=maria" data-field="ascents">—</span>, <span class="af-pv" data-source="climbers" data-where="id=maria" data-field="distance_m">—</span> m climbed</span><span class="af-site">Hardest sport <span class="af-pv" data-source="climbers" data-where="id=maria" data-field="hardest_grade">—</span>, <span class="af-pv" data-source="climbers" data-where="id=maria" data-field="hardest_route">—</span></span><span class="af-site af-pv" data-source="climbers" data-where="id=maria" data-field="styles">—</span></div>
+    </div>
+    <p class="af-note">Profile snapshot from theCrag, <span class="af-pv" data-source="climbers" data-row="0" data-field="as_of">—</span>.</p>
+    <div class="af-climbing-body dash-skeleton" data-source="outlook climb_guide"></div>
+  </section>
+
+  <section class="af-panel" id="targets" hidden>
+    <h2 class="af-h2">Climbs we are aiming at</h2>
+    <p class="af-note">Add a crag or a route. Each morning's refresh looks it up, forecasts that crag and lights the days it is climbable.</p>
+    <div class="af-target-entry">
+      <input class="af-target-input" id="af-target-input" type="text" maxlength="120" autocomplete="off" aria-label="Crag or route to add" placeholder="Crag or route, for example a route name and its crag">
+      <button class="af-target-add" id="af-target-add" type="button">Add</button>
+    </div>
+    <p class="af-note af-target-msg" role="status"></p>
+    <ul class="af-targets" data-source="outlook"></ul>
+  </section>
+
+  <section class="af-panel" id="rules">
+    <h2 class="af-h2">How the lights are set</h2>
+    <div class="af-rules">
+      <div class="af-rule">
+        <h3>Skydiving, student limits</h3>
+        <p>Australian Parachute Federation rules cap students at 15 knots of ground wind (Operational Regulation 6.4.2) and require the target to stay visible with no descent through cloud (6.4.1). Go needs 10 knots or less, under 35% low cloud and a dry day. Between 10 and 15 knots is a maybe, because the forecast has no gusts and the limit applies to them. Certificate A and B holders get 20 knots. The drop zone safety officer always has the final call.</p>
+      </div>
+      <div class="af-rule">
+        <h3>Kiteboarding</h3>
+        <p>Go needs 15 to 30 knots in the afternoon at Botany Bay. 12 to 14 knots is a maybe. The spot follows the wind direction: Kurnell for north through north-east and for westerlies, Kyeemagh or Dolls Point for easterlies, Dolls Point, Ramsgate or Wanda for south and south-east. Winds off the land are marked maybe because they are gusty. Check local kiting zones before launching.</p>
+      </div>
+      <div class="af-rule">
+        <h3>Climbing</h3>
+        <p>Sport crags with plenty at grade 20 and under: Berowra and Mt Ku-ring-gai in Sydney's north, Shipley Upper and Bardens Lookout in the Blue Mountains. Sandstone loses strength when wet, so 2 mm or more on the day, or 10 mm or more the day before, is a no. Lighter rain, 30°C or hotter, or under 10°C is a maybe.</p>
+        <p>The climbing section's top pick is the best-lit climb, with your closest single-pitch target first, then Claude's fixed recommendations, then the rest of your targets. Multi-pitch and crags with no route picked come last.</p>
+      </div>
+      <div class="af-rule">
+        <h3>Tennis</h3>
+        <p>The fallback. Go needs a dry day under 17 knots and under 33°C in Sydney. It becomes the best pick whenever no adventure sport is a go.</p>
+        <p>Mutch Park, Pagewood: 6 courts, $30 an hour, open 7 am to 10 pm by pin code. <a class="af-link" href="https://www.mutchparksports.com.au/book-a-court/tennis/" target="_blank" rel="noopener">See today's courts and book</a></p>
+        <p>Heffron Park, Maroubra: 10 courts, $35 an hour off-peak and $42 peak, open from 7 am to 10 pm Monday to Thursday, 9 pm Friday and 8 pm weekends. <a class="af-link" href="https://heffronparktennis.com.au/book-a-court/" target="_blank" rel="noopener">Book a court</a></p>
+      </div>
+      <div class="af-rule">
+        <h3>The forecast</h3>
+        <p>MET Norway's global model at six points, read at 8 am, 11 am, 2 pm and 5 pm for the first two to three days and at 11 am and 5 pm after that. It gives average wind, not gusts, and coastal sea breezes often run a few knots above it. Days six and seven are an early look only. Confirm on WillyWeather before you drive.</p>
+      </div>
+    </div>
+  </section>
+</div>
+
+
+<script>window.__SNAPSHOT=[{"loc":"berowra","time":"2026-11-03T12:00:00Z","wind_ms":5.2,"dir_deg":194.3,"cloud_pct":100.0,"cloud_low_pct":100.0,"temp_c":17.1,"rain_6h_mm":0.1},{"loc":"berowra","time":"2026-11-03T18:00:00Z","wind_ms":3.8,"dir_deg":230.5,"cloud_pct":100.0,"cloud_low_pct":100.0,"temp_c":15.8,"rain_6h_mm":0.2},{"loc":"berowra","time":"2026-11-03T21:00:00Z","wind_ms":3.4,"dir_deg":228.0,"cloud_pct":100.0,"cloud_low_pct":100.0,"temp_c":17.6,"rain_6h_mm":0.8},{"loc":"berowra","time":"2026-11-04T00:00:00Z","wind_ms":2.9,"dir_deg":236.9,"cloud_pct":44.5,"cloud_low_pct":37.5,"temp_c":21.2,"rain_6h_mm":0.8},{"loc":"berowra","time":"2026-11-04T03:00:00Z","wind_ms":2.5,"dir_deg":207.6,"cloud_pct":71.9,"cloud_low_pct":1.6,"temp_c":26.0,"rain_6h_mm":0.2},{"loc":"berowra","time":"2026-11-04T06:00:00Z","wind_ms":3.3,"dir_deg":82.4,"cloud_pct":12.5,"cloud_low_pct":0.0,"temp_c":23.6,"rain_6h_mm":0.0},{"loc":"berowra","time":"2026-11-04T12:00:00Z","wind_ms":2.9,"dir_deg":295.9,"cloud_pct":25.0,"cloud_low_pct":0.0,"temp_c":17.0,"rain_6h_mm":0.6},{"loc":"berowra","time":"2026-11-04T18:00:00Z","wind_ms":3.5,"dir_deg":266.7,"cloud_pct":4.7,"cloud_low_pct":0.8,"temp_c":14.0,"rain_6h_mm":0.0},{"loc":"berowra","time":"2026-11-04T21:00:00Z","wind_ms":6.4,"dir_deg":226.6,"cloud_pct":8.6,"cloud_low_pct":1.6,"temp_c":16.9,"rain_6h_mm":0.0},{"loc":"berowra","time":"2026-11-05T00:00:00Z","wind_ms":5.1,"dir_deg":229.8,"cloud_pct":0.0,"cloud_low_pct":0.0,"temp_c":20.2,"rain_6h_mm":0.0},{"loc":"berowra","time":"2026-11-05T03:00:00Z","wind_ms":5.0,"dir_deg":228.1,"cloud_pct":86.7,"cloud_low_pct":0.0,"temp_c":23.4,"rain_6h_mm":0.0},{"loc":"berowra","time":"2026-11-05T06:00:00Z","wind_ms":4.7,"dir_deg":138.0,"cloud_pct":23.4,"cloud_low_pct":0.0,"temp_c":20.2,"rain_6h_mm":0.0},{"loc":"berowra","time":"2026-11-05T12:00:00Z","wind_ms":2.6,"dir_deg":230.9,"cloud_pct":0.0,"cloud_low_pct":0.0,"temp_c":13.3,"rain_6h_mm":0.0},{"loc":"berowra","time":"2026-11-05T18:00:00Z","wind_ms":2.1,"dir_deg":222.6,"cloud_pct":0.0,"cloud_low_pct":0.0,"temp_c":11.2,"rain_6h_mm":0.0},{"loc":"berowra","time":"2026-11-05T21:00:00Z","wind_ms":2.2,"dir_deg":210.6,"cloud_pct":0.0,"cloud_low_pct":0.0,"temp_c":15.9,"rain_6h_mm":null},{"loc":"berowra","time":"2026-11-06T00:00:00Z","wind_ms":1.2,"dir_deg":272.9,"cloud_pct":26.6,"cloud_low_pct":25.8,"temp_c":21.8,"rain_6h_mm":0.0},{"loc":"berowra","time":"2026-11-06T06:00:00Z","wind_ms":4.6,"dir_deg":81.2,"cloud_pct":0.0,"cloud_low_pct":null,"temp_c":20.5,"rain_6h_mm":0.0},{"loc":"berowra","time":"2026-11-06T12:00:00Z","wind_ms":1.8,"dir_deg":12.7,"cloud_pct":0.0,"cloud_low_pct":null,"temp_c":14.4,"rain_6h_mm":0.0},{"loc":"berowra","time":"2026-11-06T18:00:00Z","wind_ms":1.4,"dir_deg":279.4,"cloud_pct":14.1,"cloud_low_pct":5.5,"temp_c":11.9,"rain_6h_mm":0.0},{"loc":"berowra","time":"2026-11-07T00:00:00Z","wind_ms":2.6,"dir_deg":249.5,"cloud_pct":30.5,"cloud_low_pct":null,"temp_c":25.4,"rain_6h_mm":3.5},{"loc":"berowra","time":"2026-11-07T06:00:00Z","wind_ms":6.0,"dir_deg":159.3,"cloud_pct":90.6,"cloud_low_pct":83.6,"temp_c":15.6,"rain_6h_mm":4.9},{"loc":"berowra","time":"2026-11-07T12:00:00Z","wind_ms":4.7,"dir_deg":185.3,"cloud_pct":100.0,"cloud_low_pct":30.5,"temp_c":13.4,"rain_6h_mm":0.0},{"loc":"berowra","time":"2026-11-07T18:00:00Z","wind_ms":3.3,"dir_deg":213.7,"cloud_pct":2.3,"cloud_low_pct":0.8,"temp_c":9.7,"rain_6h_mm":0.1},{"loc":"berowra","time":"2026-11-08T00:00:00Z","wind_ms":5.1,"dir_deg":179.2,"cloud_pct":43.0,"cloud_low_pct":34.4,"temp_c":16.1,"rain_6h_mm":0.4},{"loc":"berowra","time":"2026-11-08T06:00:00Z","wind_ms":5.7,"dir_deg":171.9,"cloud_pct":75.0,"cloud_low_pct":72.7,"temp_c":16.8,"rain_6h_mm":0.0},{"loc":"berowra","time":"2026-11-08T12:00:00Z","wind_ms":2.5,"dir_deg":223.4,"cloud_pct":5.5,"cloud_low_pct":4.7,"temp_c":10.6,"rain_6h_mm":0.0},{"loc":"berowra","time":"2026-11-08T18:00:00Z","wind_ms":2.8,"dir_deg":223.9,"cloud_pct":10.2,"cloud_low_pct":9.4,"temp_c":9.6,"rain_6h_mm":0.0},{"loc":"berowra","time":"2026-11-09T00:00:00Z","wind_ms":2.5,"dir_deg":201.8,"cloud_pct":79.7,"cloud_low_pct":78.9,"temp_c":19.3,"rain_6h_mm":0.1},{"loc":"berowra","time":"2026-11-09T06:00:00Z","wind_ms":3.8,"dir_deg":121.5,"cloud_pct":12.5,"cloud_low_pct":3.1,"temp_c":18.5,"rain_6h_mm":0.0},{"loc":"berowra","time":"2026-11-09T12:00:00Z","wind_ms":1.2,"dir_deg":141.0,"cloud_pct":4.7,"cloud_low_pct":4.7,"temp_c":11.8,"rain_6h_mm":0.0},{"loc":"berowra","time":"2026-11-09T18:00:00Z","wind_ms":1.5,"dir_deg":325.0,"cloud_pct":23.4,"cloud_low_pct":0.8,"temp_c":10.0,"rain_6h_mm":0.0},{"loc":"berowra","time":"2026-11-10T00:00:00Z","wind_ms":2.6,"dir_deg":8.7,"cloud_pct":26.6,"cloud_low_pct":0.0,"temp_c":23.3,"rain_6h_mm":0.0},{"loc":"berowra","time":"2026-11-10T06:00:00Z","wind_ms":3.8,"dir_deg":69.2,"cloud_pct":97.7,"cloud_low_pct":0.0,"temp_c":24.8,"rain_6h_mm":0.2},{"loc":"berowra","time":"2026-11-10T12:00:00Z","wind_ms":3.6,"dir_deg":27.7,"cloud_pct":61.7,"cloud_low_pct":0.0,"temp_c":19.9,"rain_6h_mm":0.0},{"loc":"berowra","time":"2026-11-10T18:00:00Z","wind_ms":3.7,"dir_deg":330.8,"cloud_pct":69.5,"cloud_low_pct":0.0,"temp_c":19.3,"rain_6h_mm":0.0},{"loc":"berowra","time":"2026-11-11T00:00:00Z","wind_ms":5.4,"dir_deg":308.3,"cloud_pct":95.3,"cloud_low_pct":0.8,"temp_c":26.5,"rain_6h_mm":0.2},{"loc":"berowra","time":"2026-11-11T06:00:00Z","wind_ms":4.2,"dir_deg":246.2,"cloud_pct":75.0,"cloud_low_pct":0.0,"temp_c":28.9,"rain_6h_mm":0.0},{"loc":"blackheath","time":"2026-11-03T12:00:00Z","wind_ms":2.8,"dir_deg":184.0,"cloud_pct":100.0,"cloud_low_pct":100.0,"temp_c":9.7,"rain_6h_mm":0.0},{"loc":"blackheath","time":"2026-11-03T18:00:00Z","wind_ms":3.2,"dir_deg":250.5,"cloud_pct":100.0,"cloud_low_pct":100.0,"temp_c":9.5,"rain_6h_mm":0.0},{"loc":"blackheath","time":"2026-11-03T21:00:00Z","wind_ms":2.5,"dir_deg":234.9,"cloud_pct":100.0,"cloud_low_pct":100.0,"temp_c":10.8,"rain_6h_mm":0.0},{"loc":"blackheath","time":"2026-11-04T00:00:00Z","wind_ms":2.9,"dir_deg":248.7,"cloud_pct":62.5,"cloud_low_pct":56.2,"temp_c":18.7,"rain_6h_mm":0.0},{"loc":"blackheath","time":"2026-11-04T03:00:00Z","wind_ms":4.7,"dir_deg":269.6,"cloud_pct":93.7,"cloud_low_pct":1.6,"temp_c":21.6,"rain_6h_mm":0.0},{"loc":"blackheath","time":"2026-11-04T06:00:00Z","wind_ms":5.5,"dir_deg":269.2,"cloud_pct":6.2,"cloud_low_pct":0.8,"temp_c":19.8,"rain_6h_mm":0.0},{"loc":"blackheath","time":"2026-11-04T12:00:00Z","wind_ms":6.3,"dir_deg":261.4,"cloud_pct":94.5,"cloud_low_pct":1.6,"temp_c":12.2,"rain_6h_mm":0.6},{"loc":"blackheath","time":"2026-11-04T18:00:00Z","wind_ms":6.2,"dir_deg":264.5,"cloud_pct":13.3,"cloud_low_pct":13.3,"temp_c":8.6,"rain_6h_mm":0.0},{"loc":"blackheath","time":"2026-11-04T21:00:00Z","wind_ms":6.9,"dir_deg":259.9,"cloud_pct":13.3,"cloud_low_pct":13.3,"temp_c":8.2,"rain_6h_mm":0.0},{"loc":"blackheath","time":"2026-11-05T00:00:00Z","wind_ms":5.7,"dir_deg":242.3,"cloud_pct":2.3,"cloud_low_pct":2.3,"temp_c":13.3,"rain_6h_mm":0.0},{"loc":"blackheath","time":"2026-11-05T03:00:00Z","wind_ms":5.4,"dir_deg":239.0,"cloud_pct":28.1,"cloud_low_pct":0.8,"temp_c":16.4,"rain_6h_mm":0.0},{"loc":"blackheath","time":"2026-11-05T06:00:00Z","wind_ms":5.4,"dir_deg":237.5,"cloud_pct":9.4,"cloud_low_pct":0.0,"temp_c":15.8,"rain_6h_mm":0.0},{"loc":"blackheath","time":"2026-11-05T12:00:00Z","wind_ms":1.5,"dir_deg":318.7,"cloud_pct":0.0,"cloud_low_pct":0.0,"temp_c":6.7,"rain_6h_mm":0.0},{"loc":"blackheath","time":"2026-11-05T18:00:00Z","wind_ms":1.8,"dir_deg":345.1,"cloud_pct":0.0,"cloud_low_pct":0.0,"temp_c":3.5,"rain_6h_mm":0.0},{"loc":"blackheath","time":"2026-11-05T21:00:00Z","wind_ms":1.5,"dir_deg":12.2,"cloud_pct":0.0,"cloud_low_pct":0.0,"temp_c":10.1,"rain_6h_mm":null},{"loc":"blackheath","time":"2026-11-06T00:00:00Z","wind_ms":2.3,"dir_deg":326.4,"cloud_pct":4.7,"cloud_low_pct":4.7,"temp_c":16.6,"rain_6h_mm":0.0},{"loc":"blackheath","time":"2026-11-06T06:00:00Z","wind_ms":4.0,"dir_deg":277.4,"cloud_pct":2.3,"cloud_low_pct":0.0,"temp_c":18.7,"rain_6h_mm":0.0},{"loc":"blackheath","time":"2026-11-06T12:00:00Z","wind_ms":1.8,"dir_deg":302.7,"cloud_pct":0.0,"cloud_low_pct":0.0,"temp_c":7.8,"rain_6h_mm":0.0},{"loc":"blackheath","time":"2026-11-06T18:00:00Z","wind_ms":2.4,"dir_deg":301.3,"cloud_pct":10.9,"cloud_low_pct":0.0,"temp_c":5.9,"rain_6h_mm":0.0},{"loc":"blackheath","time":"2026-11-07T00:00:00Z","wind_ms":5.5,"dir_deg":258.0,"cloud_pct":21.9,"cloud_low_pct":11.7,"temp_c":18.3,"rain_6h_mm":0.4},{"loc":"blackheath","time":"2026-11-07T06:00:00Z","wind_ms":2.7,"dir_deg":228.0,"cloud_pct":21.1,"cloud_low_pct":7.0,"temp_c":17.0,"rain_6h_mm":6.1},{"loc":"blackheath","time":"2026-11-07T12:00:00Z","wind_ms":2.8,"dir_deg":167.4,"cloud_pct":100.0,"cloud_low_pct":100.0,"temp_c":5.3,"rain_6h_mm":0.1},{"loc":"blackheath","time":"2026-11-07T18:00:00Z","wind_ms":2.8,"dir_deg":188.9,"cloud_pct":0.8,"cloud_low_pct":0.8,"temp_c":1.2,"rain_6h_mm":0.0},{"loc":"blackheath","time":"2026-11-08T00:00:00Z","wind_ms":3.8,"dir_deg":153.6,"cloud_pct":50.8,"cloud_low_pct":50.8,"temp_c":11.0,"rain_6h_mm":0.0},{"loc":"blackheath","time":"2026-11-08T06:00:00Z","wind_ms":4.2,"dir_deg":125.4,"cloud_pct":57.0,"cloud_low_pct":50.0,"temp_c":11.0,"rain_6h_mm":0.0},{"loc":"blackheath","time":"2026-11-08T12:00:00Z","wind_ms":1.7,"dir_deg":124.9,"cloud_pct":0.0,"cloud_low_pct":0.0,"temp_c":3.4,"rain_6h_mm":0.0},{"loc":"blackheath","time":"2026-11-08T18:00:00Z","wind_ms":0.6,"dir_deg":251.9,"cloud_pct":1.6,"cloud_low_pct":1.6,"temp_c":1.9,"rain_6h_mm":0.0},{"loc":"blackheath","time":"2026-11-09T00:00:00Z","wind_ms":1.1,"dir_deg":190.7,"cloud_pct":0.0,"cloud_low_pct":0.0,"temp_c":13.9,"rain_6h_mm":0.0},{"loc":"blackheath","time":"2026-11-09T06:00:00Z","wind_ms":3.6,"dir_deg":88.3,"cloud_pct":36.7,"cloud_low_pct":0.0,"temp_c":15.7,"rain_6h_mm":0.0},{"loc":"blackheath","time":"2026-11-09T12:00:00Z","wind_ms":1.2,"dir_deg":57.0,"cloud_pct":99.2,"cloud_low_pct":99.2,"temp_c":8.1,"rain_6h_mm":0.0},{"loc":"blackheath","time":"2026-11-09T18:00:00Z","wind_ms":2.2,"dir_deg":328.4,"cloud_pct":94.5,"cloud_low_pct":88.3,"temp_c":5.7,"rain_6h_mm":0.0},{"loc":"blackheath","time":"2026-11-10T00:00:00Z","wind_ms":2.9,"dir_deg":271.6,"cloud_pct":39.8,"cloud_low_pct":0.0,"temp_c":21.9,"rain_6h_mm":0.0},{"loc":"blackheath","time":"2026-11-10T06:00:00Z","wind_ms":4.4,"dir_deg":264.0,"cloud_pct":98.4,"cloud_low_pct":0.0,"temp_c":23.4,"rain_6h_mm":0.0},{"loc":"blackheath","time":"2026-11-10T12:00:00Z","wind_ms":1.9,"dir_deg":332.8,"cloud_pct":80.5,"cloud_low_pct":0.0,"temp_c":14.8,"rain_6h_mm":0.0},{"loc":"blackheath","time":"2026-11-10T18:00:00Z","wind_ms":4.8,"dir_deg":309.6,"cloud_pct":62.5,"cloud_low_pct":0.0,"temp_c":15.4,"rain_6h_mm":0.0},{"loc":"blackheath","time":"2026-11-11T00:00:00Z","wind_ms":7.6,"dir_deg":295.8,"cloud_pct":46.9,"cloud_low_pct":7.8,"temp_c":20.9,"rain_6h_mm":0.0},{"loc":"blackheath","time":"2026-11-11T06:00:00Z","wind_ms":6.8,"dir_deg":269.1,"cloud_pct":7.8,"cloud_low_pct":0.0,"temp_c":19.4,"rain_6h_mm":0.0},{"loc":"botany","time":"2026-11-03T12:00:00Z","wind_ms":8.2,"dir_deg":181.8,"cloud_pct":95.3,"cloud_low_pct":89.8,"temp_c":18.4,"rain_6h_mm":0.3},{"loc":"botany","time":"2026-11-03T18:00:00Z","wind_ms":9.1,"dir_deg":213.0,"cloud_pct":95.3,"cloud_low_pct":95.3,"temp_c":17.7,"rain_6h_mm":0.8},{"loc":"botany","time":"2026-11-03T21:00:00Z","wind_ms":8.1,"dir_deg":208.1,"cloud_pct":53.9,"cloud_low_pct":35.9,"temp_c":19.5,"rain_6h_mm":2.1},{"loc":"botany","time":"2026-11-04T00:00:00Z","wind_ms":6.8,"dir_deg":181.0,"cloud_pct":43.0,"cloud_low_pct":34.4,"temp_c":22.1,"rain_6h_mm":1.5},{"loc":"botany","time":"2026-11-04T03:00:00Z","wind_ms":4.7,"dir_deg":127.6,"cloud_pct":88.3,"cloud_low_pct":2.3,"temp_c":23.0,"rain_6h_mm":0.2},{"loc":"botany","time":"2026-11-04T06:00:00Z","wind_ms":3.6,"dir_deg":96.2,"cloud_pct":15.6,"cloud_low_pct":0.0,"temp_c":21.7,"rain_6h_mm":0.0},{"loc":"botany","time":"2026-11-04T12:00:00Z","wind_ms":3.8,"dir_deg":304.8,"cloud_pct":64.8,"cloud_low_pct":0.0,"temp_c":17.7,"rain_6h_mm":0.1},{"loc":"botany","time":"2026-11-04T18:00:00Z","wind_ms":7.3,"dir_deg":258.8,"cloud_pct":11.7,"cloud_low_pct":0.8,"temp_c":16.7,"rain_6h_mm":0.0},{"loc":"botany","time":"2026-11-04T21:00:00Z","wind_ms":7.9,"dir_deg":271.1,"cloud_pct":0.0,"cloud_low_pct":0.0,"temp_c":17.5,"rain_6h_mm":0.2},{"loc":"botany","time":"2026-11-05T00:00:00Z","wind_ms":7.2,"dir_deg":182.6,"cloud_pct":50.8,"cloud_low_pct":0.0,"temp_c":20.9,"rain_6h_mm":0.2},{"loc":"botany","time":"2026-11-05T03:00:00Z","wind_ms":8.7,"dir_deg":169.0,"cloud_pct":19.5,"cloud_low_pct":0.0,"temp_c":19.9,"rain_6h_mm":0.0},{"loc":"botany","time":"2026-11-05T06:00:00Z","wind_ms":8.1,"dir_deg":166.6,"cloud_pct":18.0,"cloud_low_pct":0.0,"temp_c":20.2,"rain_6h_mm":0.0},{"loc":"botany","time":"2026-11-05T12:00:00Z","wind_ms":8.4,"dir_deg":202.3,"cloud_pct":1.6,"cloud_low_pct":0.0,"temp_c":16.6,"rain_6h_mm":0.0},{"loc":"botany","time":"2026-11-05T18:00:00Z","wind_ms":7.9,"dir_deg":195.0,"cloud_pct":0.0,"cloud_low_pct":0.0,"temp_c":14.9,"rain_6h_mm":0.0},{"loc":"botany","time":"2026-11-05T21:00:00Z","wind_ms":6.3,"dir_deg":185.8,"cloud_pct":0.0,"cloud_low_pct":0.0,"temp_c":17.3,"rain_6h_mm":null},{"loc":"botany","time":"2026-11-06T00:00:00Z","wind_ms":4.0,"dir_deg":130.7,"cloud_pct":27.3,"cloud_low_pct":27.3,"temp_c":20.9,"rain_6h_mm":0.0},{"loc":"botany","time":"2026-11-06T06:00:00Z","wind_ms":5.4,"dir_deg":54.3,"cloud_pct":15.6,"cloud_low_pct":0.0,"temp_c":21.2,"rain_6h_mm":0.0},{"loc":"botany","time":"2026-11-06T12:00:00Z","wind_ms":1.9,"dir_deg":356.7,"cloud_pct":0.0,"cloud_low_pct":0.0,"temp_c":17.7,"rain_6h_mm":0.0},{"loc":"botany","time":"2026-11-06T18:00:00Z","wind_ms":2.0,"dir_deg":280.7,"cloud_pct":7.0,"cloud_low_pct":0.0,"temp_c":13.9,"rain_6h_mm":0.0},{"loc":"botany","time":"2026-11-07T00:00:00Z","wind_ms":2.4,"dir_deg":283.5,"cloud_pct":38.3,"cloud_low_pct":0.0,"temp_c":25.7,"rain_6h_mm":5.8},{"loc":"botany","time":"2026-11-07T06:00:00Z","wind_ms":8.5,"dir_deg":168.4,"cloud_pct":81.2,"cloud_low_pct":26.6,"temp_c":16.1,"rain_6h_mm":1.4},{"loc":"botany","time":"2026-11-07T12:00:00Z","wind_ms":8.0,"dir_deg":180.0,"cloud_pct":100.0,"cloud_low_pct":5.5,"temp_c":14.9,"rain_6h_mm":0.0},{"loc":"botany","time":"2026-11-07T18:00:00Z","wind_ms":4.5,"dir_deg":210.0,"cloud_pct":14.1,"cloud_low_pct":0.0,"temp_c":11.3,"rain_6h_mm":0.3},{"loc":"botany","time":"2026-11-08T00:00:00Z","wind_ms":6.6,"dir_deg":185.7,"cloud_pct":26.6,"cloud_low_pct":14.1,"temp_c":16.1,"rain_6h_mm":0.8},{"loc":"botany","time":"2026-11-08T06:00:00Z","wind_ms":6.2,"dir_deg":180.1,"cloud_pct":56.2,"cloud_low_pct":35.2,"temp_c":16.2,"rain_6h_mm":0.4},{"loc":"botany","time":"2026-11-08T12:00:00Z","wind_ms":3.8,"dir_deg":188.6,"cloud_pct":10.2,"cloud_low_pct":5.5,"temp_c":14.1,"rain_6h_mm":0.1},{"loc":"botany","time":"2026-11-08T18:00:00Z","wind_ms":2.5,"dir_deg":232.2,"cloud_pct":25.0,"cloud_low_pct":22.7,"temp_c":11.2,"rain_6h_mm":0.0},{"loc":"botany","time":"2026-11-09T00:00:00Z","wind_ms":4.7,"dir_deg":170.1,"cloud_pct":44.5,"cloud_low_pct":43.7,"temp_c":18.4,"rain_6h_mm":0.0},{"loc":"botany","time":"2026-11-09T06:00:00Z","wind_ms":3.8,"dir_deg":136.6,"cloud_pct":52.3,"cloud_low_pct":51.6,"temp_c":18.6,"rain_6h_mm":0.0},{"loc":"botany","time":"2026-11-09T12:00:00Z","wind_ms":1.0,"dir_deg":241.1,"cloud_pct":27.3,"cloud_low_pct":27.3,"temp_c":14.2,"rain_6h_mm":0.0},{"loc":"botany","time":"2026-11-09T18:00:00Z","wind_ms":2.0,"dir_deg":284.6,"cloud_pct":39.8,"cloud_low_pct":31.2,"temp_c":11.2,"rain_6h_mm":0.0},{"loc":"botany","time":"2026-11-10T00:00:00Z","wind_ms":2.6,"dir_deg":32.5,"cloud_pct":3.1,"cloud_low_pct":0.0,"temp_c":22.3,"rain_6h_mm":0.0},{"loc":"botany","time":"2026-11-10T06:00:00Z","wind_ms":3.9,"dir_deg":50.5,"cloud_pct":93.7,"cloud_low_pct":0.0,"temp_c":24.0,"rain_6h_mm":0.0},{"loc":"botany","time":"2026-11-10T12:00:00Z","wind_ms":1.0,"dir_deg":162.6,"cloud_pct":81.2,"cloud_low_pct":0.0,"temp_c":20.5,"rain_6h_mm":0.0},{"loc":"botany","time":"2026-11-10T18:00:00Z","wind_ms":3.0,"dir_deg":318.0,"cloud_pct":45.3,"cloud_low_pct":0.0,"temp_c":19.6,"rain_6h_mm":0.0},{"loc":"botany","time":"2026-11-11T00:00:00Z","wind_ms":3.7,"dir_deg":301.6,"cloud_pct":94.5,"cloud_low_pct":3.1,"temp_c":28.6,"rain_6h_mm":0.0},{"loc":"botany","time":"2026-11-11T06:00:00Z","wind_ms":3.1,"dir_deg":113.2,"cloud_pct":0.0,"cloud_low_pct":0.0,"temp_c":25.4,"rain_6h_mm":0.2},{"loc":"moruya","time":"2026-11-03T12:00:00Z","wind_ms":7.7,"dir_deg":195.6,"cloud_pct":100.0,"cloud_low_pct":100.0,"temp_c":16.9,"rain_6h_mm":0.6},{"loc":"moruya","time":"2026-11-03T18:00:00Z","wind_ms":5.1,"dir_deg":206.1,"cloud_pct":43.7,"cloud_low_pct":43.0,"temp_c":15.6,"rain_6h_mm":0.0},{"loc":"moruya","time":"2026-11-03T21:00:00Z","wind_ms":2.9,"dir_deg":202.0,"cloud_pct":79.7,"cloud_low_pct":9.4,"temp_c":17.6,"rain_6h_mm":0.1},{"loc":"moruya","time":"2026-11-04T00:00:00Z","wind_ms":3.7,"dir_deg":98.4,"cloud_pct":89.8,"cloud_low_pct":9.4,"temp_c":20.8,"rain_6h_mm":0.2},{"loc":"moruya","time":"2026-11-04T03:00:00Z","wind_ms":5.6,"dir_deg":88.2,"cloud_pct":95.3,"cloud_low_pct":0.0,"temp_c":21.2,"rain_6h_mm":0.2},{"loc":"moruya","time":"2026-11-04T06:00:00Z","wind_ms":4.0,"dir_deg":82.8,"cloud_pct":50.0,"cloud_low_pct":41.4,"temp_c":20.9,"rain_6h_mm":0.1},{"loc":"moruya","time":"2026-11-04T12:00:00Z","wind_ms":3.6,"dir_deg":240.9,"cloud_pct":35.2,"cloud_low_pct":16.4,"temp_c":15.6,"rain_6h_mm":2.5},{"loc":"moruya","time":"2026-11-04T18:00:00Z","wind_ms":4.7,"dir_deg":288.6,"cloud_pct":99.2,"cloud_low_pct":58.6,"temp_c":12.3,"rain_6h_mm":1.9},{"loc":"moruya","time":"2026-11-04T21:00:00Z","wind_ms":3.4,"dir_deg":218.8,"cloud_pct":14.1,"cloud_low_pct":13.3,"temp_c":14.4,"rain_6h_mm":0.1},{"loc":"moruya","time":"2026-11-05T00:00:00Z","wind_ms":7.5,"dir_deg":200.9,"cloud_pct":3.9,"cloud_low_pct":3.1,"temp_c":19.9,"rain_6h_mm":0.0},{"loc":"moruya","time":"2026-11-05T03:00:00Z","wind_ms":8.1,"dir_deg":186.0,"cloud_pct":51.6,"cloud_low_pct":0.0,"temp_c":22.5,"rain_6h_mm":0.0},{"loc":"moruya","time":"2026-11-05T06:00:00Z","wind_ms":9.4,"dir_deg":169.6,"cloud_pct":5.5,"cloud_low_pct":0.0,"temp_c":21.1,"rain_6h_mm":0.0},{"loc":"moruya","time":"2026-11-05T12:00:00Z","wind_ms":7.5,"dir_deg":212.3,"cloud_pct":0.0,"cloud_low_pct":0.0,"temp_c":12.6,"rain_6h_mm":0.0},{"loc":"moruya","time":"2026-11-05T18:00:00Z","wind_ms":3.2,"dir_deg":286.6,"cloud_pct":0.0,"cloud_low_pct":0.0,"temp_c":7.4,"rain_6h_mm":0.0},{"loc":"moruya","time":"2026-11-05T21:00:00Z","wind_ms":1.5,"dir_deg":319.9,"cloud_pct":0.0,"cloud_low_pct":0.0,"temp_c":13.7,"rain_6h_mm":null},{"loc":"moruya","time":"2026-11-06T00:00:00Z","wind_ms":3.8,"dir_deg":83.5,"cloud_pct":0.8,"cloud_low_pct":0.8,"temp_c":18.0,"rain_6h_mm":0.0},{"loc":"moruya","time":"2026-11-06T06:00:00Z","wind_ms":3.8,"dir_deg":71.9,"cloud_pct":81.2,"cloud_low_pct":67.2,"temp_c":19.0,"rain_6h_mm":0.0},{"loc":"moruya","time":"2026-11-06T12:00:00Z","wind_ms":1.2,"dir_deg":236.5,"cloud_pct":54.7,"cloud_low_pct":31.2,"temp_c":15.8,"rain_6h_mm":0.0},{"loc":"moruya","time":"2026-11-06T18:00:00Z","wind_ms":1.9,"dir_deg":300.1,"cloud_pct":29.7,"cloud_low_pct":26.6,"temp_c":10.8,"rain_6h_mm":0.8},{"loc":"moruya","time":"2026-11-07T00:00:00Z","wind_ms":5.9,"dir_deg":170.5,"cloud_pct":100.0,"cloud_low_pct":100.0,"temp_c":17.7,"rain_6h_mm":1.4},{"loc":"moruya","time":"2026-11-07T06:00:00Z","wind_ms":6.7,"dir_deg":176.3,"cloud_pct":100.0,"cloud_low_pct":0.0,"temp_c":16.9,"rain_6h_mm":0.0},{"loc":"moruya","time":"2026-11-07T12:00:00Z","wind_ms":3.5,"dir_deg":216.8,"cloud_pct":0.8,"cloud_low_pct":0.8,"temp_c":10.4,"rain_6h_mm":0.0},{"loc":"moruya","time":"2026-11-07T18:00:00Z","wind_ms":3.3,"dir_deg":256.6,"cloud_pct":0.0,"cloud_low_pct":0.0,"temp_c":7.4,"rain_6h_mm":0.0},{"loc":"moruya","time":"2026-11-08T00:00:00Z","wind_ms":4.7,"dir_deg":170.1,"cloud_pct":7.8,"cloud_low_pct":4.7,"temp_c":16.6,"rain_6h_mm":0.1},{"loc":"moruya","time":"2026-11-08T06:00:00Z","wind_ms":5.7,"dir_deg":163.6,"cloud_pct":13.3,"cloud_low_pct":2.3,"temp_c":15.8,"rain_6h_mm":0.0},{"loc":"moruya","time":"2026-11-08T12:00:00Z","wind_ms":3.6,"dir_deg":232.6,"cloud_pct":0.0,"cloud_low_pct":0.0,"temp_c":11.0,"rain_6h_mm":0.0},{"loc":"moruya","time":"2026-11-08T18:00:00Z","wind_ms":2.9,"dir_deg":266.7,"cloud_pct":5.5,"cloud_low_pct":4.7,"temp_c":7.5,"rain_6h_mm":0.0},{"loc":"moruya","time":"2026-11-09T00:00:00Z","wind_ms":2.9,"dir_deg":153.1,"cloud_pct":48.4,"cloud_low_pct":47.7,"temp_c":18.4,"rain_6h_mm":0.0},{"loc":"moruya","time":"2026-11-09T06:00:00Z","wind_ms":3.5,"dir_deg":136.7,"cloud_pct":31.2,"cloud_low_pct":31.2,"temp_c":17.3,"rain_6h_mm":0.0},{"loc":"moruya","time":"2026-11-09T12:00:00Z","wind_ms":2.0,"dir_deg":265.4,"cloud_pct":11.7,"cloud_low_pct":9.4,"temp_c":12.7,"rain_6h_mm":0.0},{"loc":"moruya","time":"2026-11-09T18:00:00Z","wind_ms":2.7,"dir_deg":301.9,"cloud_pct":78.1,"cloud_low_pct":39.8,"temp_c":8.1,"rain_6h_mm":0.0},{"loc":"moruya","time":"2026-11-10T00:00:00Z","wind_ms":3.0,"dir_deg":58.4,"cloud_pct":50.0,"cloud_low_pct":0.0,"temp_c":21.0,"rain_6h_mm":0.4},{"loc":"moruya","time":"2026-11-10T06:00:00Z","wind_ms":2.3,"dir_deg":19.6,"cloud_pct":96.9,"cloud_low_pct":0.0,"temp_c":20.7,"rain_6h_mm":0.0},{"loc":"moruya","time":"2026-11-10T12:00:00Z","wind_ms":2.8,"dir_deg":334.0,"cloud_pct":88.3,"cloud_low_pct":0.0,"temp_c":17.2,"rain_6h_mm":0.0},{"loc":"moruya","time":"2026-11-10T18:00:00Z","wind_ms":2.5,"dir_deg":311.6,"cloud_pct":92.2,"cloud_low_pct":0.0,"temp_c":13.0,"rain_6h_mm":0.0},{"loc":"moruya","time":"2026-11-11T00:00:00Z","wind_ms":3.6,"dir_deg":124.7,"cloud_pct":14.8,"cloud_low_pct":6.2,"temp_c":21.2,"rain_6h_mm":0.3},{"loc":"moruya","time":"2026-11-11T06:00:00Z","wind_ms":4.3,"dir_deg":154.0,"cloud_pct":60.2,"cloud_low_pct":35.2,"temp_c":20.3,"rain_6h_mm":6.5},{"loc":"picton","time":"2026-11-03T12:00:00Z","wind_ms":4.6,"dir_deg":182.4,"cloud_pct":47.7,"cloud_low_pct":43.0,"temp_c":15.7,"rain_6h_mm":0.0},{"loc":"picton","time":"2026-11-03T18:00:00Z","wind_ms":3.5,"dir_deg":222.9,"cloud_pct":57.0,"cloud_low_pct":57.0,"temp_c":15.2,"rain_6h_mm":0.1},{"loc":"picton","time":"2026-11-03T21:00:00Z","wind_ms":3.4,"dir_deg":205.5,"cloud_pct":67.2,"cloud_low_pct":59.4,"temp_c":17.6,"rain_6h_mm":0.6},{"loc":"picton","time":"2026-11-04T00:00:00Z","wind_ms":1.9,"dir_deg":253.8,"cloud_pct":54.7,"cloud_low_pct":36.7,"temp_c":21.9,"rain_6h_mm":0.5},{"loc":"picton","time":"2026-11-04T03:00:00Z","wind_ms":3.9,"dir_deg":256.9,"cloud_pct":81.2,"cloud_low_pct":2.3,"temp_c":26.7,"rain_6h_mm":0.0},{"loc":"picton","time":"2026-11-04T06:00:00Z","wind_ms":4.7,"dir_deg":288.6,"cloud_pct":17.2,"cloud_low_pct":0.0,"temp_c":26.5,"rain_6h_mm":0.0},{"loc":"picton","time":"2026-11-04T12:00:00Z","wind_ms":5.2,"dir_deg":269.2,"cloud_pct":93.7,"cloud_low_pct":0.0,"temp_c":16.8,"rain_6h_mm":0.0},{"loc":"picton","time":"2026-11-04T18:00:00Z","wind_ms":4.3,"dir_deg":232.4,"cloud_pct":3.1,"cloud_low_pct":2.3,"temp_c":14.0,"rain_6h_mm":0.0},{"loc":"picton","time":"2026-11-04T21:00:00Z","wind_ms":5.6,"dir_deg":249.7,"cloud_pct":0.8,"cloud_low_pct":0.8,"temp_c":15.0,"rain_6h_mm":0.0},{"loc":"picton","time":"2026-11-05T00:00:00Z","wind_ms":5.0,"dir_deg":224.1,"cloud_pct":1.6,"cloud_low_pct":1.6,"temp_c":19.6,"rain_6h_mm":0.0},{"loc":"picton","time":"2026-11-05T03:00:00Z","wind_ms":5.7,"dir_deg":220.4,"cloud_pct":94.5,"cloud_low_pct":0.0,"temp_c":21.6,"rain_6h_mm":0.0},{"loc":"picton","time":"2026-11-05T06:00:00Z","wind_ms":4.6,"dir_deg":133.1,"cloud_pct":88.3,"cloud_low_pct":0.0,"temp_c":18.1,"rain_6h_mm":0.0},{"loc":"picton","time":"2026-11-05T12:00:00Z","wind_ms":2.8,"dir_deg":200.0,"cloud_pct":0.0,"cloud_low_pct":0.0,"temp_c":12.1,"rain_6h_mm":0.0},{"loc":"picton","time":"2026-11-05T18:00:00Z","wind_ms":2.8,"dir_deg":206.8,"cloud_pct":0.0,"cloud_low_pct":0.0,"temp_c":9.3,"rain_6h_mm":0.0},{"loc":"picton","time":"2026-11-05T21:00:00Z","wind_ms":2.7,"dir_deg":203.6,"cloud_pct":0.0,"cloud_low_pct":0.0,"temp_c":14.6,"rain_6h_mm":null},{"loc":"picton","time":"2026-11-06T00:00:00Z","wind_ms":2.7,"dir_deg":345.8,"cloud_pct":0.8,"cloud_low_pct":0.8,"temp_c":19.5,"rain_6h_mm":0.0},{"loc":"picton","time":"2026-11-06T06:00:00Z","wind_ms":3.2,"dir_deg":356.6,"cloud_pct":20.3,"cloud_low_pct":0.0,"temp_c":23.8,"rain_6h_mm":0.0},{"loc":"picton","time":"2026-11-06T12:00:00Z","wind_ms":1.2,"dir_deg":35.3,"cloud_pct":0.0,"cloud_low_pct":0.0,"temp_c":14.1,"rain_6h_mm":0.0},{"loc":"picton","time":"2026-11-06T18:00:00Z","wind_ms":1.6,"dir_deg":207.1,"cloud_pct":7.0,"cloud_low_pct":0.0,"temp_c":10.5,"rain_6h_mm":0.0},{"loc":"picton","time":"2026-11-07T00:00:00Z","wind_ms":4.4,"dir_deg":259.4,"cloud_pct":40.6,"cloud_low_pct":8.6,"temp_c":24.4,"rain_6h_mm":10.2},{"loc":"picton","time":"2026-11-07T06:00:00Z","wind_ms":7.0,"dir_deg":151.1,"cloud_pct":73.4,"cloud_low_pct":36.7,"temp_c":13.6,"rain_6h_mm":0.4},{"loc":"picton","time":"2026-11-07T12:00:00Z","wind_ms":5.5,"dir_deg":174.1,"cloud_pct":97.7,"cloud_low_pct":7.0,"temp_c":12.2,"rain_6h_mm":0.0},{"loc":"picton","time":"2026-11-07T18:00:00Z","wind_ms":3.5,"dir_deg":204.8,"cloud_pct":0.0,"cloud_low_pct":0.0,"temp_c":8.6,"rain_6h_mm":0.0},{"loc":"picton","time":"2026-11-08T00:00:00Z","wind_ms":4.9,"dir_deg":170.9,"cloud_pct":50.8,"cloud_low_pct":41.4,"temp_c":17.0,"rain_6h_mm":0.0},{"loc":"picton","time":"2026-11-08T06:00:00Z","wind_ms":4.7,"dir_deg":164.4,"cloud_pct":59.4,"cloud_low_pct":58.6,"temp_c":15.9,"rain_6h_mm":0.0},{"loc":"picton","time":"2026-11-08T12:00:00Z","wind_ms":2.4,"dir_deg":198.8,"cloud_pct":2.3,"cloud_low_pct":0.8,"temp_c":9.4,"rain_6h_mm":0.0},{"loc":"picton","time":"2026-11-08T18:00:00Z","wind_ms":2.1,"dir_deg":234.5,"cloud_pct":3.9,"cloud_low_pct":2.3,"temp_c":6.5,"rain_6h_mm":0.0},{"loc":"picton","time":"2026-11-09T00:00:00Z","wind_ms":1.7,"dir_deg":175.4,"cloud_pct":100.0,"cloud_low_pct":86.7,"temp_c":18.9,"rain_6h_mm":0.0},{"loc":"picton","time":"2026-11-09T06:00:00Z","wind_ms":3.8,"dir_deg":132.2,"cloud_pct":21.9,"cloud_low_pct":12.5,"temp_c":18.0,"rain_6h_mm":0.0},{"loc":"picton","time":"2026-11-09T12:00:00Z","wind_ms":1.1,"dir_deg":193.2,"cloud_pct":85.2,"cloud_low_pct":85.2,"temp_c":10.6,"rain_6h_mm":0.0},{"loc":"picton","time":"2026-11-09T18:00:00Z","wind_ms":0.4,"dir_deg":333.6,"cloud_pct":28.1,"cloud_low_pct":1.6,"temp_c":9.8,"rain_6h_mm":0.0},{"loc":"picton","time":"2026-11-10T00:00:00Z","wind_ms":2.7,"dir_deg":8.5,"cloud_pct":7.0,"cloud_low_pct":0.0,"temp_c":19.7,"rain_6h_mm":0.0},{"loc":"picton","time":"2026-11-10T06:00:00Z","wind_ms":4.0,"dir_deg":18.8,"cloud_pct":80.5,"cloud_low_pct":0.0,"temp_c":26.0,"rain_6h_mm":0.5},{"loc":"picton","time":"2026-11-10T12:00:00Z","wind_ms":2.8,"dir_deg":49.0,"cloud_pct":93.7,"cloud_low_pct":0.0,"temp_c":17.2,"rain_6h_mm":0.0},{"loc":"picton","time":"2026-11-10T18:00:00Z","wind_ms":0.1,"dir_deg":340.7,"cloud_pct":42.2,"cloud_low_pct":0.0,"temp_c":15.3,"rain_6h_mm":0.0},{"loc":"picton","time":"2026-11-11T00:00:00Z","wind_ms":2.1,"dir_deg":291.4,"cloud_pct":92.2,"cloud_low_pct":8.6,"temp_c":25.5,"rain_6h_mm":0.0},{"loc":"picton","time":"2026-11-11T06:00:00Z","wind_ms":4.8,"dir_deg":253.6,"cloud_pct":0.0,"cloud_low_pct":0.0,"temp_c":27.0,"rain_6h_mm":0.0},{"loc":"sydney","time":"2026-11-03T12:00:00Z","wind_ms":9.5,"dir_deg":180.0,"cloud_pct":93.7,"cloud_low_pct":85.9,"temp_c":18.6,"rain_6h_mm":0.6},{"loc":"sydney","time":"2026-11-03T18:00:00Z","wind_ms":10.1,"dir_deg":209.6,"cloud_pct":100.0,"cloud_low_pct":100.0,"temp_c":18.3,"rain_6h_mm":1.1},{"loc":"sydney","time":"2026-11-03T21:00:00Z","wind_ms":9.2,"dir_deg":220.5,"cloud_pct":58.6,"cloud_low_pct":46.1,"temp_c":19.1,"rain_6h_mm":1.1},{"loc":"sydney","time":"2026-11-04T00:00:00Z","wind_ms":7.9,"dir_deg":189.0,"cloud_pct":46.1,"cloud_low_pct":36.7,"temp_c":21.2,"rain_6h_mm":0.7},{"loc":"sydney","time":"2026-11-04T03:00:00Z","wind_ms":5.8,"dir_deg":149.8,"cloud_pct":90.6,"cloud_low_pct":2.3,"temp_c":21.4,"rain_6h_mm":0.1},{"loc":"sydney","time":"2026-11-04T06:00:00Z","wind_ms":4.3,"dir_deg":92.1,"cloud_pct":14.8,"cloud_low_pct":0.0,"temp_c":20.9,"rain_6h_mm":0.0},{"loc":"sydney","time":"2026-11-04T12:00:00Z","wind_ms":4.3,"dir_deg":1.4,"cloud_pct":41.4,"cloud_low_pct":0.0,"temp_c":18.7,"rain_6h_mm":0.6},{"loc":"sydney","time":"2026-11-04T18:00:00Z","wind_ms":8.7,"dir_deg":261.5,"cloud_pct":11.7,"cloud_low_pct":0.8,"temp_c":17.5,"rain_6h_mm":0.0},{"loc":"sydney","time":"2026-11-04T21:00:00Z","wind_ms":10.0,"dir_deg":267.1,"cloud_pct":0.0,"cloud_low_pct":0.0,"temp_c":17.4,"rain_6h_mm":0.1},{"loc":"sydney","time":"2026-11-05T00:00:00Z","wind_ms":8.7,"dir_deg":183.1,"cloud_pct":43.0,"cloud_low_pct":0.0,"temp_c":19.5,"rain_6h_mm":0.1},{"loc":"sydney","time":"2026-11-05T03:00:00Z","wind_ms":10.4,"dir_deg":178.8,"cloud_pct":18.7,"cloud_low_pct":0.0,"temp_c":19.1,"rain_6h_mm":0.0},{"loc":"sydney","time":"2026-11-05T06:00:00Z","wind_ms":8.7,"dir_deg":168.1,"cloud_pct":13.3,"cloud_low_pct":0.0,"temp_c":19.9,"rain_6h_mm":0.0},{"loc":"sydney","time":"2026-11-05T12:00:00Z","wind_ms":10.0,"dir_deg":200.0,"cloud_pct":0.0,"cloud_low_pct":0.0,"temp_c":17.7,"rain_6h_mm":0.0},{"loc":"sydney","time":"2026-11-05T18:00:00Z","wind_ms":9.3,"dir_deg":197.9,"cloud_pct":0.0,"cloud_low_pct":0.0,"temp_c":15.8,"rain_6h_mm":0.0},{"loc":"sydney","time":"2026-11-05T21:00:00Z","wind_ms":7.0,"dir_deg":205.6,"cloud_pct":0.8,"cloud_low_pct":0.8,"temp_c":17.0,"rain_6h_mm":null},{"loc":"sydney","time":"2026-11-06T00:00:00Z","wind_ms":4.6,"dir_deg":157.6,"cloud_pct":5.5,"cloud_low_pct":5.5,"temp_c":19.4,"rain_6h_mm":0.0},{"loc":"sydney","time":"2026-11-06T06:00:00Z","wind_ms":6.0,"dir_deg":55.1,"cloud_pct":6.2,"cloud_low_pct":0.0,"temp_c":20.4,"rain_6h_mm":0.0},{"loc":"sydney","time":"2026-11-06T12:00:00Z","wind_ms":2.7,"dir_deg":357.0,"cloud_pct":0.0,"cloud_low_pct":0.0,"temp_c":18.1,"rain_6h_mm":0.0},{"loc":"sydney","time":"2026-11-06T18:00:00Z","wind_ms":1.9,"dir_deg":290.6,"cloud_pct":15.6,"cloud_low_pct":0.0,"temp_c":15.0,"rain_6h_mm":0.0},{"loc":"sydney","time":"2026-11-07T00:00:00Z","wind_ms":1.8,"dir_deg":290.6,"cloud_pct":25.0,"cloud_low_pct":0.0,"temp_c":24.2,"rain_6h_mm":3.8},{"loc":"sydney","time":"2026-11-07T06:00:00Z","wind_ms":9.7,"dir_deg":172.2,"cloud_pct":60.9,"cloud_low_pct":29.7,"temp_c":17.1,"rain_6h_mm":1.1},{"loc":"sydney","time":"2026-11-07T12:00:00Z","wind_ms":8.7,"dir_deg":181.4,"cloud_pct":100.0,"cloud_low_pct":16.4,"temp_c":15.8,"rain_6h_mm":0.1},{"loc":"sydney","time":"2026-11-07T18:00:00Z","wind_ms":5.9,"dir_deg":210.1,"cloud_pct":31.2,"cloud_low_pct":18.0,"temp_c":12.5,"rain_6h_mm":0.8},{"loc":"sydney","time":"2026-11-08T00:00:00Z","wind_ms":7.6,"dir_deg":190.2,"cloud_pct":33.6,"cloud_low_pct":20.3,"temp_c":15.8,"rain_6h_mm":1.0},{"loc":"sydney","time":"2026-11-08T06:00:00Z","wind_ms":7.3,"dir_deg":183.0,"cloud_pct":54.7,"cloud_low_pct":29.7,"temp_c":16.4,"rain_6h_mm":0.6},{"loc":"sydney","time":"2026-11-08T12:00:00Z","wind_ms":4.7,"dir_deg":187.7,"cloud_pct":18.7,"cloud_low_pct":10.9,"temp_c":15.4,"rain_6h_mm":0.4},{"loc":"sydney","time":"2026-11-08T18:00:00Z","wind_ms":3.5,"dir_deg":226.3,"cloud_pct":44.5,"cloud_low_pct":36.7,"temp_c":12.7,"rain_6h_mm":0.1},{"loc":"sydney","time":"2026-11-09T00:00:00Z","wind_ms":5.4,"dir_deg":178.2,"cloud_pct":39.8,"cloud_low_pct":39.1,"temp_c":17.4,"rain_6h_mm":0.0},{"loc":"sydney","time":"2026-11-09T06:00:00Z","wind_ms":4.2,"dir_deg":143.0,"cloud_pct":19.5,"cloud_low_pct":19.5,"temp_c":17.9,"rain_6h_mm":0.0},{"loc":"sydney","time":"2026-11-09T12:00:00Z","wind_ms":0.2,"dir_deg":222.7,"cloud_pct":18.0,"cloud_low_pct":18.0,"temp_c":16.2,"rain_6h_mm":0.0},{"loc":"sydney","time":"2026-11-09T18:00:00Z","wind_ms":2.0,"dir_deg":312.4,"cloud_pct":10.9,"cloud_low_pct":0.0,"temp_c":12.9,"rain_6h_mm":0.0},{"loc":"sydney","time":"2026-11-10T00:00:00Z","wind_ms":4.0,"dir_deg":42.1,"cloud_pct":8.6,"cloud_low_pct":0.8,"temp_c":21.1,"rain_6h_mm":0.0},{"loc":"sydney","time":"2026-11-10T06:00:00Z","wind_ms":5.4,"dir_deg":43.9,"cloud_pct":93.7,"cloud_low_pct":0.0,"temp_c":22.8,"rain_6h_mm":0.0},{"loc":"sydney","time":"2026-11-10T12:00:00Z","wind_ms":1.1,"dir_deg":7.4,"cloud_pct":89.1,"cloud_low_pct":0.0,"temp_c":20.9,"rain_6h_mm":0.0},{"loc":"sydney","time":"2026-11-10T18:00:00Z","wind_ms":4.6,"dir_deg":330.9,"cloud_pct":60.9,"cloud_low_pct":0.0,"temp_c":21.3,"rain_6h_mm":0.0},{"loc":"sydney","time":"2026-11-11T00:00:00Z","wind_ms":3.3,"dir_deg":304.5,"cloud_pct":92.2,"cloud_low_pct":3.1,"temp_c":27.4,"rain_6h_mm":0.9},{"loc":"sydney","time":"2026-11-11T06:00:00Z","wind_ms":2.5,"dir_deg":72.9,"cloud_pct":22.7,"cloud_low_pct":0.0,"temp_c":24.0,"rain_6h_mm":0.4},{"loc":"target:bangor-west","time":"2026-11-03T12:00:00Z","wind_ms":6.4,"dir_deg":182.4,"cloud_pct":77.3,"cloud_low_pct":60.9,"temp_c":17.6,"rain_6h_mm":0.1},{"loc":"target:bangor-west","time":"2026-11-03T18:00:00Z","wind_ms":6.2,"dir_deg":256.2,"cloud_pct":74.2,"cloud_low_pct":74.2,"temp_c":16.3,"rain_6h_mm":1.0},{"loc":"target:bangor-west","time":"2026-11-03T21:00:00Z","wind_ms":5.3,"dir_deg":222.1,"cloud_pct":50.8,"cloud_low_pct":38.3,"temp_c":19.4,"rain_6h_mm":3.3},{"loc":"target:bangor-west","time":"2026-11-04T00:00:00Z","wind_ms":4.3,"dir_deg":236.4,"cloud_pct":46.9,"cloud_low_pct":30.5,"temp_c":22.3,"rain_6h_mm":2.6},{"loc":"target:bangor-west","time":"2026-11-04T03:00:00Z","wind_ms":3.4,"dir_deg":95.1,"cloud_pct":82.8,"cloud_low_pct":6.2,"temp_c":25.3,"rain_6h_mm":0.3},{"loc":"target:bangor-west","time":"2026-11-04T06:00:00Z","wind_ms":2.8,"dir_deg":92.7,"cloud_pct":8.6,"cloud_low_pct":0.0,"temp_c":22.9,"rain_6h_mm":0.0},{"loc":"target:bangor-west","time":"2026-11-04T12:00:00Z","wind_ms":3.0,"dir_deg":271.1,"cloud_pct":75.8,"cloud_low_pct":0.0,"temp_c":17.0,"rain_6h_mm":0.1},{"loc":"target:bangor-west","time":"2026-11-04T18:00:00Z","wind_ms":5.7,"dir_deg":244.3,"cloud_pct":10.9,"cloud_low_pct":0.8,"temp_c":16.0,"rain_6h_mm":0.0},{"loc":"target:bangor-west","time":"2026-11-04T21:00:00Z","wind_ms":6.1,"dir_deg":263.4,"cloud_pct":0.0,"cloud_low_pct":0.0,"temp_c":17.0,"rain_6h_mm":0.0},{"loc":"target:bangor-west","time":"2026-11-05T00:00:00Z","wind_ms":5.2,"dir_deg":241.4,"cloud_pct":52.3,"cloud_low_pct":0.0,"temp_c":21.8,"rain_6h_mm":0.0},{"loc":"target:bangor-west","time":"2026-11-05T03:00:00Z","wind_ms":6.3,"dir_deg":151.2,"cloud_pct":29.7,"cloud_low_pct":0.0,"temp_c":20.7,"rain_6h_mm":0.0},{"loc":"target:bangor-west","time":"2026-11-05T06:00:00Z","wind_ms":6.3,"dir_deg":156.5,"cloud_pct":28.1,"cloud_low_pct":0.0,"temp_c":20.1,"rain_6h_mm":0.0},{"loc":"target:bangor-west","time":"2026-11-05T12:00:00Z","wind_ms":5.2,"dir_deg":271.2,"cloud_pct":0.0,"cloud_low_pct":0.0,"temp_c":14.3,"rain_6h_mm":0.0},{"loc":"target:bangor-west","time":"2026-11-05T18:00:00Z","wind_ms":5.3,"dir_deg":218.3,"cloud_pct":0.0,"cloud_low_pct":0.0,"temp_c":12.3,"rain_6h_mm":0.0},{"loc":"target:bangor-west","time":"2026-11-05T21:00:00Z","wind_ms":4.2,"dir_deg":179.4,"cloud_pct":0.0,"cloud_low_pct":0.0,"temp_c":16.7,"rain_6h_mm":null},{"loc":"target:bangor-west","time":"2026-11-06T00:00:00Z","wind_ms":2.6,"dir_deg":21.6,"cloud_pct":44.5,"cloud_low_pct":44.5,"temp_c":21.9,"rain_6h_mm":0.0},{"loc":"target:bangor-west","time":"2026-11-06T06:00:00Z","wind_ms":4.0,"dir_deg":58.3,"cloud_pct":13.3,"cloud_low_pct":0.0,"temp_c":21.7,"rain_6h_mm":0.0},{"loc":"target:bangor-west","time":"2026-11-06T12:00:00Z","wind_ms":0.9,"dir_deg":30.6,"cloud_pct":0.0,"cloud_low_pct":0.0,"temp_c":16.2,"rain_6h_mm":0.0},{"loc":"target:bangor-west","time":"2026-11-06T18:00:00Z","wind_ms":2.0,"dir_deg":246.0,"cloud_pct":5.5,"cloud_low_pct":0.0,"temp_c":12.8,"rain_6h_mm":0.0},{"loc":"target:bangor-west","time":"2026-11-07T00:00:00Z","wind_ms":2.9,"dir_deg":266.4,"cloud_pct":28.1,"cloud_low_pct":0.0,"temp_c":25.1,"rain_6h_mm":4.5},{"loc":"target:bangor-west","time":"2026-11-07T06:00:00Z","wind_ms":7.1,"dir_deg":162.1,"cloud_pct":82.0,"cloud_low_pct":28.9,"temp_c":15.3,"rain_6h_mm":2.0},{"loc":"target:bangor-west","time":"2026-11-07T12:00:00Z","wind_ms":5.4,"dir_deg":172.8,"cloud_pct":100.0,"cloud_low_pct":4.7,"temp_c":14.3,"rain_6h_mm":0.0},{"loc":"target:bangor-west","time":"2026-11-07T18:00:00Z","wind_ms":2.2,"dir_deg":215.0,"cloud_pct":10.9,"cloud_low_pct":0.8,"temp_c":9.9,"rain_6h_mm":0.1},{"loc":"target:bangor-west","time":"2026-11-08T00:00:00Z","wind_ms":4.6,"dir_deg":173.2,"cloud_pct":30.5,"cloud_low_pct":17.2,"temp_c":16.6,"rain_6h_mm":0.5},{"loc":"target:bangor-west","time":"2026-11-08T06:00:00Z","wind_ms":4.9,"dir_deg":170.5,"cloud_pct":37.5,"cloud_low_pct":25.8,"temp_c":16.4,"rain_6h_mm":0.1},{"loc":"target:bangor-west","time":"2026-11-08T12:00:00Z","wind_ms":1.6,"dir_deg":208.2,"cloud_pct":7.0,"cloud_low_pct":4.7,"temp_c":11.8,"rain_6h_mm":0.0},{"loc":"target:bangor-west","time":"2026-11-08T18:00:00Z","wind_ms":2.3,"dir_deg":285.3,"cloud_pct":8.6,"cloud_low_pct":7.0,"temp_c":9.2,"rain_6h_mm":0.1},{"loc":"target:bangor-west","time":"2026-11-09T00:00:00Z","wind_ms":2.9,"dir_deg":159.6,"cloud_pct":85.9,"cloud_low_pct":82.0,"temp_c":19.6,"rain_6h_mm":0.2},{"loc":"target:bangor-west","time":"2026-11-09T06:00:00Z","wind_ms":3.3,"dir_deg":130.6,"cloud_pct":39.1,"cloud_low_pct":35.9,"temp_c":18.8,"rain_6h_mm":0.0},{"loc":"target:bangor-west","time":"2026-11-09T12:00:00Z","wind_ms":0.8,"dir_deg":221.2,"cloud_pct":93.7,"cloud_low_pct":93.7,"temp_c":12.8,"rain_6h_mm":0.0},{"loc":"target:bangor-west","time":"2026-11-09T18:00:00Z","wind_ms":1.3,"dir_deg":239.4,"cloud_pct":18.7,"cloud_low_pct":3.1,"temp_c":9.7,"rain_6h_mm":0.0},{"loc":"target:bangor-west","time":"2026-11-10T00:00:00Z","wind_ms":2.0,"dir_deg":358.2,"cloud_pct":2.3,"cloud_low_pct":0.0,"temp_c":22.8,"rain_6h_mm":0.0},{"loc":"target:bangor-west","time":"2026-11-10T06:00:00Z","wind_ms":2.9,"dir_deg":74.6,"cloud_pct":91.4,"cloud_low_pct":0.0,"temp_c":25.2,"rain_6h_mm":0.1},{"loc":"target:bangor-west","time":"2026-11-10T12:00:00Z","wind_ms":0.7,"dir_deg":149.0,"cloud_pct":85.9,"cloud_low_pct":0.0,"temp_c":20.0,"rain_6h_mm":0.0},{"loc":"target:bangor-west","time":"2026-11-10T18:00:00Z","wind_ms":1.8,"dir_deg":310.9,"cloud_pct":41.4,"cloud_low_pct":0.0,"temp_c":17.6,"rain_6h_mm":0.0},{"loc":"target:bangor-west","time":"2026-11-11T00:00:00Z","wind_ms":4.1,"dir_deg":298.3,"cloud_pct":90.6,"cloud_low_pct":1.6,"temp_c":27.9,"rain_6h_mm":0.0},{"loc":"target:bangor-west","time":"2026-11-11T06:00:00Z","wind_ms":1.8,"dir_deg":178.0,"cloud_pct":0.0,"cloud_low_pct":0.0,"temp_c":29.1,"rain_6h_mm":0.0},{"loc":"target:pierces-pass","time":"2026-11-03T12:00:00Z","wind_ms":2.8,"dir_deg":184.0,"cloud_pct":100.0,"cloud_low_pct":100.0,"temp_c":11.8,"rain_6h_mm":0.0},{"loc":"target:pierces-pass","time":"2026-11-03T18:00:00Z","wind_ms":3.2,"dir_deg":250.5,"cloud_pct":100.0,"cloud_low_pct":100.0,"temp_c":11.6,"rain_6h_mm":0.0},{"loc":"target:pierces-pass","time":"2026-11-03T21:00:00Z","wind_ms":2.5,"dir_deg":234.9,"cloud_pct":100.0,"cloud_low_pct":100.0,"temp_c":12.9,"rain_6h_mm":0.0},{"loc":"target:pierces-pass","time":"2026-11-04T00:00:00Z","wind_ms":2.9,"dir_deg":248.7,"cloud_pct":62.5,"cloud_low_pct":56.2,"temp_c":20.8,"rain_6h_mm":0.0},{"loc":"target:pierces-pass","time":"2026-11-04T03:00:00Z","wind_ms":4.7,"dir_deg":269.6,"cloud_pct":93.7,"cloud_low_pct":1.6,"temp_c":23.7,"rain_6h_mm":0.0},{"loc":"target:pierces-pass","time":"2026-11-04T06:00:00Z","wind_ms":5.5,"dir_deg":269.2,"cloud_pct":6.2,"cloud_low_pct":0.8,"temp_c":21.9,"rain_6h_mm":0.0},{"loc":"target:pierces-pass","time":"2026-11-04T12:00:00Z","wind_ms":6.3,"dir_deg":261.4,"cloud_pct":94.5,"cloud_low_pct":1.6,"temp_c":14.3,"rain_6h_mm":0.6},{"loc":"target:pierces-pass","time":"2026-11-04T18:00:00Z","wind_ms":6.2,"dir_deg":264.5,"cloud_pct":13.3,"cloud_low_pct":13.3,"temp_c":10.7,"rain_6h_mm":0.0},{"loc":"target:pierces-pass","time":"2026-11-04T21:00:00Z","wind_ms":6.9,"dir_deg":259.9,"cloud_pct":13.3,"cloud_low_pct":13.3,"temp_c":10.3,"rain_6h_mm":0.0},{"loc":"target:pierces-pass","time":"2026-11-05T00:00:00Z","wind_ms":5.7,"dir_deg":242.3,"cloud_pct":2.3,"cloud_low_pct":2.3,"temp_c":15.4,"rain_6h_mm":0.0},{"loc":"target:pierces-pass","time":"2026-11-05T03:00:00Z","wind_ms":5.4,"dir_deg":239.0,"cloud_pct":28.1,"cloud_low_pct":0.8,"temp_c":18.5,"rain_6h_mm":0.0},{"loc":"target:pierces-pass","time":"2026-11-05T06:00:00Z","wind_ms":5.4,"dir_deg":237.5,"cloud_pct":9.4,"cloud_low_pct":0.0,"temp_c":17.9,"rain_6h_mm":0.0},{"loc":"target:pierces-pass","time":"2026-11-05T12:00:00Z","wind_ms":1.5,"dir_deg":318.7,"cloud_pct":0.0,"cloud_low_pct":0.0,"temp_c":8.8,"rain_6h_mm":0.0},{"loc":"target:pierces-pass","time":"2026-11-05T18:00:00Z","wind_ms":1.8,"dir_deg":345.1,"cloud_pct":0.0,"cloud_low_pct":0.0,"temp_c":5.6,"rain_6h_mm":0.0},{"loc":"target:pierces-pass","time":"2026-11-05T21:00:00Z","wind_ms":1.5,"dir_deg":12.2,"cloud_pct":0.0,"cloud_low_pct":0.0,"temp_c":12.2,"rain_6h_mm":null},{"loc":"target:pierces-pass","time":"2026-11-06T00:00:00Z","wind_ms":2.3,"dir_deg":326.4,"cloud_pct":4.7,"cloud_low_pct":4.7,"temp_c":18.7,"rain_6h_mm":0.0},{"loc":"target:pierces-pass","time":"2026-11-06T06:00:00Z","wind_ms":4.0,"dir_deg":277.4,"cloud_pct":2.3,"cloud_low_pct":0.0,"temp_c":20.8,"rain_6h_mm":0.0},{"loc":"target:pierces-pass","time":"2026-11-06T12:00:00Z","wind_ms":1.8,"dir_deg":302.7,"cloud_pct":0.0,"cloud_low_pct":0.0,"temp_c":9.9,"rain_6h_mm":0.0},{"loc":"target:pierces-pass","time":"2026-11-06T18:00:00Z","wind_ms":2.4,"dir_deg":301.3,"cloud_pct":10.9,"cloud_low_pct":0.0,"temp_c":8.0,"rain_6h_mm":0.0},{"loc":"target:pierces-pass","time":"2026-11-07T00:00:00Z","wind_ms":5.5,"dir_deg":258.0,"cloud_pct":21.9,"cloud_low_pct":11.7,"temp_c":20.4,"rain_6h_mm":0.4},{"loc":"target:pierces-pass","time":"2026-11-07T06:00:00Z","wind_ms":2.7,"dir_deg":228.0,"cloud_pct":21.1,"cloud_low_pct":7.0,"temp_c":19.1,"rain_6h_mm":6.1},{"loc":"target:pierces-pass","time":"2026-11-07T12:00:00Z","wind_ms":2.8,"dir_deg":167.4,"cloud_pct":100.0,"cloud_low_pct":100.0,"temp_c":7.4,"rain_6h_mm":0.1},{"loc":"target:pierces-pass","time":"2026-11-07T18:00:00Z","wind_ms":2.8,"dir_deg":188.9,"cloud_pct":0.8,"cloud_low_pct":0.8,"temp_c":3.3,"rain_6h_mm":0.0},{"loc":"target:pierces-pass","time":"2026-11-08T00:00:00Z","wind_ms":3.8,"dir_deg":153.6,"cloud_pct":50.8,"cloud_low_pct":50.8,"temp_c":13.1,"rain_6h_mm":0.0},{"loc":"target:pierces-pass","time":"2026-11-08T06:00:00Z","wind_ms":4.2,"dir_deg":125.4,"cloud_pct":57.0,"cloud_low_pct":50.0,"temp_c":13.1,"rain_6h_mm":0.0},{"loc":"target:pierces-pass","time":"2026-11-08T12:00:00Z","wind_ms":1.7,"dir_deg":124.9,"cloud_pct":0.0,"cloud_low_pct":0.0,"temp_c":5.5,"rain_6h_mm":0.0},{"loc":"target:pierces-pass","time":"2026-11-08T18:00:00Z","wind_ms":0.6,"dir_deg":251.9,"cloud_pct":1.6,"cloud_low_pct":1.6,"temp_c":4.0,"rain_6h_mm":0.0},{"loc":"target:pierces-pass","time":"2026-11-09T00:00:00Z","wind_ms":1.1,"dir_deg":190.7,"cloud_pct":0.0,"cloud_low_pct":0.0,"temp_c":16.0,"rain_6h_mm":0.0},{"loc":"target:pierces-pass","time":"2026-11-09T06:00:00Z","wind_ms":3.6,"dir_deg":88.3,"cloud_pct":36.7,"cloud_low_pct":0.0,"temp_c":17.8,"rain_6h_mm":0.0},{"loc":"target:pierces-pass","time":"2026-11-09T12:00:00Z","wind_ms":1.2,"dir_deg":57.0,"cloud_pct":99.2,"cloud_low_pct":99.2,"temp_c":10.2,"rain_6h_mm":0.0},{"loc":"target:pierces-pass","time":"2026-11-09T18:00:00Z","wind_ms":2.2,"dir_deg":328.4,"cloud_pct":94.5,"cloud_low_pct":88.3,"temp_c":7.8,"rain_6h_mm":0.0},{"loc":"target:pierces-pass","time":"2026-11-10T00:00:00Z","wind_ms":2.9,"dir_deg":271.6,"cloud_pct":39.8,"cloud_low_pct":0.0,"temp_c":24.0,"rain_6h_mm":0.0},{"loc":"target:pierces-pass","time":"2026-11-10T06:00:00Z","wind_ms":4.4,"dir_deg":264.0,"cloud_pct":98.4,"cloud_low_pct":0.0,"temp_c":25.5,"rain_6h_mm":0.0},{"loc":"target:pierces-pass","time":"2026-11-10T12:00:00Z","wind_ms":1.9,"dir_deg":332.8,"cloud_pct":80.5,"cloud_low_pct":0.0,"temp_c":16.9,"rain_6h_mm":0.0},{"loc":"target:pierces-pass","time":"2026-11-10T18:00:00Z","wind_ms":4.8,"dir_deg":309.6,"cloud_pct":62.5,"cloud_low_pct":0.0,"temp_c":17.5,"rain_6h_mm":0.0},{"loc":"target:pierces-pass","time":"2026-11-11T00:00:00Z","wind_ms":7.6,"dir_deg":295.8,"cloud_pct":46.9,"cloud_low_pct":7.8,"temp_c":23.0,"rain_6h_mm":0.0},{"loc":"target:pierces-pass","time":"2026-11-11T06:00:00Z","wind_ms":6.8,"dir_deg":269.1,"cloud_pct":7.8,"cloud_low_pct":0.0,"temp_c":21.5,"rain_6h_mm":0.0},{"loc":"target:scarborough-cliffs","time":"2026-11-03T12:00:00Z","wind_ms":8.2,"dir_deg":191.6,"cloud_pct":64.8,"cloud_low_pct":59.4,"temp_c":16.2,"rain_6h_mm":0.2},{"loc":"target:scarborough-cliffs","time":"2026-11-03T18:00:00Z","wind_ms":7.6,"dir_deg":204.9,"cloud_pct":61.7,"cloud_low_pct":61.7,"temp_c":15.8,"rain_6h_mm":0.4},{"loc":"target:scarborough-cliffs","time":"2026-11-03T21:00:00Z","wind_ms":6.3,"dir_deg":209.1,"cloud_pct":71.9,"cloud_low_pct":57.8,"temp_c":17.0,"rain_6h_mm":1.8},{"loc":"target:scarborough-cliffs","time":"2026-11-04T00:00:00Z","wind_ms":4.9,"dir_deg":179.4,"cloud_pct":40.6,"cloud_low_pct":26.6,"temp_c":19.8,"rain_6h_mm":1.5},{"loc":"target:scarborough-cliffs","time":"2026-11-04T03:00:00Z","wind_ms":4.1,"dir_deg":123.8,"cloud_pct":81.2,"cloud_low_pct":4.7,"temp_c":20.4,"rain_6h_mm":0.1},{"loc":"target:scarborough-cliffs","time":"2026-11-04T06:00:00Z","wind_ms":2.4,"dir_deg":69.5,"cloud_pct":7.0,"cloud_low_pct":0.0,"temp_c":19.8,"rain_6h_mm":0.0},{"loc":"target:scarborough-cliffs","time":"2026-11-04T12:00:00Z","wind_ms":5.5,"dir_deg":280.5,"cloud_pct":89.8,"cloud_low_pct":0.0,"temp_c":18.5,"rain_6h_mm":0.2},{"loc":"target:scarborough-cliffs","time":"2026-11-04T18:00:00Z","wind_ms":8.6,"dir_deg":257.0,"cloud_pct":3.1,"cloud_low_pct":0.8,"temp_c":15.5,"rain_6h_mm":0.0},{"loc":"target:scarborough-cliffs","time":"2026-11-04T21:00:00Z","wind_ms":6.7,"dir_deg":255.1,"cloud_pct":0.0,"cloud_low_pct":0.0,"temp_c":15.4,"rain_6h_mm":0.1},{"loc":"target:scarborough-cliffs","time":"2026-11-05T00:00:00Z","wind_ms":5.6,"dir_deg":179.7,"cloud_pct":45.3,"cloud_low_pct":3.1,"temp_c":18.3,"rain_6h_mm":0.2},{"loc":"target:scarborough-cliffs","time":"2026-11-05T03:00:00Z","wind_ms":8.3,"dir_deg":153.4,"cloud_pct":48.4,"cloud_low_pct":0.8,"temp_c":17.9,"rain_6h_mm":0.1},{"loc":"target:scarborough-cliffs","time":"2026-11-05T06:00:00Z","wind_ms":8.3,"dir_deg":173.2,"cloud_pct":25.0,"cloud_low_pct":0.0,"temp_c":17.9,"rain_6h_mm":0.0},{"loc":"target:scarborough-cliffs","time":"2026-11-05T12:00:00Z","wind_ms":5.4,"dir_deg":207.8,"cloud_pct":0.0,"cloud_low_pct":0.0,"temp_c":14.5,"rain_6h_mm":0.0},{"loc":"target:scarborough-cliffs","time":"2026-11-05T18:00:00Z","wind_ms":5.3,"dir_deg":199.3,"cloud_pct":0.0,"cloud_low_pct":0.0,"temp_c":12.8,"rain_6h_mm":0.0},{"loc":"target:scarborough-cliffs","time":"2026-11-05T21:00:00Z","wind_ms":4.6,"dir_deg":190.4,"cloud_pct":0.0,"cloud_low_pct":0.0,"temp_c":14.7,"rain_6h_mm":null},{"loc":"target:scarborough-cliffs","time":"2026-11-06T00:00:00Z","wind_ms":3.0,"dir_deg":123.2,"cloud_pct":28.1,"cloud_low_pct":28.1,"temp_c":18.0,"rain_6h_mm":0.0},{"loc":"target:scarborough-cliffs","time":"2026-11-06T06:00:00Z","wind_ms":5.0,"dir_deg":56.1,"cloud_pct":40.6,"cloud_low_pct":0.0,"temp_c":19.4,"rain_6h_mm":0.0},{"loc":"target:scarborough-cliffs","time":"2026-11-06T12:00:00Z","wind_ms":3.6,"dir_deg":351.5,"cloud_pct":0.0,"cloud_low_pct":0.0,"temp_c":15.6,"rain_6h_mm":0.0},{"loc":"target:scarborough-cliffs","time":"2026-11-06T18:00:00Z","wind_ms":2.5,"dir_deg":286.1,"cloud_pct":3.1,"cloud_low_pct":0.0,"temp_c":13.9,"rain_6h_mm":0.0},{"loc":"target:scarborough-cliffs","time":"2026-11-07T00:00:00Z","wind_ms":3.0,"dir_deg":211.8,"cloud_pct":68.0,"cloud_low_pct":3.1,"temp_c":23.1,"rain_6h_mm":10.8},{"loc":"target:scarborough-cliffs","time":"2026-11-07T06:00:00Z","wind_ms":8.3,"dir_deg":171.4,"cloud_pct":100.0,"cloud_low_pct":100.0,"temp_c":13.6,"rain_6h_mm":0.1},{"loc":"target:scarborough-cliffs","time":"2026-11-07T12:00:00Z","wind_ms":8.4,"dir_deg":181.8,"cloud_pct":46.1,"cloud_low_pct":4.7,"temp_c":12.8,"rain_6h_mm":0.0},{"loc":"target:scarborough-cliffs","time":"2026-11-07T18:00:00Z","wind_ms":5.9,"dir_deg":203.5,"cloud_pct":1.6,"cloud_low_pct":0.8,"temp_c":9.4,"rain_6h_mm":0.2},{"loc":"target:scarborough-cliffs","time":"2026-11-08T00:00:00Z","wind_ms":7.3,"dir_deg":181.4,"cloud_pct":40.6,"cloud_low_pct":32.8,"temp_c":14.4,"rain_6h_mm":0.5},{"loc":"target:scarborough-cliffs","time":"2026-11-08T06:00:00Z","wind_ms":7.0,"dir_deg":178.0,"cloud_pct":18.7,"cloud_low_pct":17.2,"temp_c":14.6,"rain_6h_mm":0.1},{"loc":"target:scarborough-cliffs","time":"2026-11-08T12:00:00Z","wind_ms":4.3,"dir_deg":189.7,"cloud_pct":11.7,"cloud_low_pct":8.6,"temp_c":12.1,"rain_6h_mm":0.1},{"loc":"target:scarborough-cliffs","time":"2026-11-08T18:00:00Z","wind_ms":3.9,"dir_deg":206.3,"cloud_pct":18.0,"cloud_low_pct":3.9,"temp_c":10.8,"rain_6h_mm":0.0},{"loc":"target:scarborough-cliffs","time":"2026-11-09T00:00:00Z","wind_ms":4.3,"dir_deg":170.8,"cloud_pct":52.3,"cloud_low_pct":48.4,"temp_c":16.2,"rain_6h_mm":0.0},{"loc":"target:scarborough-cliffs","time":"2026-11-09T06:00:00Z","wind_ms":4.2,"dir_deg":140.7,"cloud_pct":68.0,"cloud_low_pct":68.0,"temp_c":15.9,"rain_6h_mm":0.0},{"loc":"target:scarborough-cliffs","time":"2026-11-09T12:00:00Z","wind_ms":0.6,"dir_deg":280.5,"cloud_pct":23.4,"cloud_low_pct":23.4,"temp_c":13.1,"rain_6h_mm":0.0},{"loc":"target:scarborough-cliffs","time":"2026-11-09T18:00:00Z","wind_ms":2.4,"dir_deg":317.4,"cloud_pct":22.7,"cloud_low_pct":1.6,"temp_c":11.3,"rain_6h_mm":0.0},{"loc":"target:scarborough-cliffs","time":"2026-11-10T00:00:00Z","wind_ms":3.2,"dir_deg":15.6,"cloud_pct":7.0,"cloud_low_pct":0.0,"temp_c":20.6,"rain_6h_mm":0.0},{"loc":"target:scarborough-cliffs","time":"2026-11-10T06:00:00Z","wind_ms":4.3,"dir_deg":34.3,"cloud_pct":84.4,"cloud_low_pct":0.0,"temp_c":23.2,"rain_6h_mm":0.1},{"loc":"target:scarborough-cliffs","time":"2026-11-10T12:00:00Z","wind_ms":4.4,"dir_deg":345.2,"cloud_pct":99.2,"cloud_low_pct":0.0,"temp_c":18.7,"rain_6h_mm":0.1},{"loc":"target:scarborough-cliffs","time":"2026-11-10T18:00:00Z","wind_ms":4.9,"dir_deg":319.9,"cloud_pct":68.0,"cloud_low_pct":0.0,"temp_c":19.0,"rain_6h_mm":0.0},{"loc":"target:scarborough-cliffs","time":"2026-11-11T00:00:00Z","wind_ms":1.6,"dir_deg":289.5,"cloud_pct":98.4,"cloud_low_pct":1.6,"temp_c":24.4,"rain_6h_mm":0.0},{"loc":"target:scarborough-cliffs","time":"2026-11-11T06:00:00Z","wind_ms":2.0,"dir_deg":92.1,"cloud_pct":0.0,"cloud_low_pct":0.0,"temp_c":22.3,"rain_6h_mm":0.0},{"loc":"target:thompsons-point","time":"2026-11-03T12:00:00Z","wind_ms":5.1,"dir_deg":223.8,"cloud_pct":37.5,"cloud_low_pct":32.0,"temp_c":15.5,"rain_6h_mm":0.1},{"loc":"target:thompsons-point","time":"2026-11-03T18:00:00Z","wind_ms":5.3,"dir_deg":224.8,"cloud_pct":93.0,"cloud_low_pct":93.0,"temp_c":15.6,"rain_6h_mm":0.2},{"loc":"target:thompsons-point","time":"2026-11-03T21:00:00Z","wind_ms":4.2,"dir_deg":239.4,"cloud_pct":100.0,"cloud_low_pct":100.0,"temp_c":17.8,"rain_6h_mm":1.1},{"loc":"target:thompsons-point","time":"2026-11-04T00:00:00Z","wind_ms":2.4,"dir_deg":241.3,"cloud_pct":66.4,"cloud_low_pct":22.7,"temp_c":22.0,"rain_6h_mm":1.2},{"loc":"target:thompsons-point","time":"2026-11-04T03:00:00Z","wind_ms":3.5,"dir_deg":83.1,"cloud_pct":91.4,"cloud_low_pct":4.7,"temp_c":23.0,"rain_6h_mm":0.3},{"loc":"target:thompsons-point","time":"2026-11-04T06:00:00Z","wind_ms":3.8,"dir_deg":88.7,"cloud_pct":4.7,"cloud_low_pct":0.0,"temp_c":21.2,"rain_6h_mm":0.0},{"loc":"target:thompsons-point","time":"2026-11-04T12:00:00Z","wind_ms":6.0,"dir_deg":284.2,"cloud_pct":94.5,"cloud_low_pct":0.0,"temp_c":19.9,"rain_6h_mm":0.0},{"loc":"target:thompsons-point","time":"2026-11-04T18:00:00Z","wind_ms":4.9,"dir_deg":261.0,"cloud_pct":1.6,"cloud_low_pct":0.8,"temp_c":14.7,"rain_6h_mm":0.4},{"loc":"target:thompsons-point","time":"2026-11-04T21:00:00Z","wind_ms":3.9,"dir_deg":208.7,"cloud_pct":18.7,"cloud_low_pct":9.4,"temp_c":15.2,"rain_6h_mm":0.4},{"loc":"target:thompsons-point","time":"2026-11-05T00:00:00Z","wind_ms":5.7,"dir_deg":186.4,"cloud_pct":35.9,"cloud_low_pct":0.0,"temp_c":19.7,"rain_6h_mm":0.1},{"loc":"target:thompsons-point","time":"2026-11-05T03:00:00Z","wind_ms":5.6,"dir_deg":154.4,"cloud_pct":43.0,"cloud_low_pct":0.0,"temp_c":19.9,"rain_6h_mm":0.1},{"loc":"target:thompsons-point","time":"2026-11-05T06:00:00Z","wind_ms":6.1,"dir_deg":182.8,"cloud_pct":25.8,"cloud_low_pct":0.0,"temp_c":19.4,"rain_6h_mm":0.1},{"loc":"target:thompsons-point","time":"2026-11-05T12:00:00Z","wind_ms":4.4,"dir_deg":296.1,"cloud_pct":2.3,"cloud_low_pct":0.0,"temp_c":12.4,"rain_6h_mm":0.0},{"loc":"target:thompsons-point","time":"2026-11-05T18:00:00Z","wind_ms":2.7,"dir_deg":299.5,"cloud_pct":1.6,"cloud_low_pct":1.6,"temp_c":9.8,"rain_6h_mm":0.0},{"loc":"target:thompsons-point","time":"2026-11-05T21:00:00Z","wind_ms":2.2,"dir_deg":277.8,"cloud_pct":0.0,"cloud_low_pct":0.0,"temp_c":15.0,"rain_6h_mm":null},{"loc":"target:thompsons-point","time":"2026-11-06T00:00:00Z","wind_ms":2.7,"dir_deg":42.1,"cloud_pct":1.6,"cloud_low_pct":1.6,"temp_c":19.4,"rain_6h_mm":0.0},{"loc":"target:thompsons-point","time":"2026-11-06T06:00:00Z","wind_ms":4.6,"dir_deg":66.0,"cloud_pct":71.9,"cloud_low_pct":0.0,"temp_c":19.7,"rain_6h_mm":0.0},{"loc":"target:thompsons-point","time":"2026-11-06T12:00:00Z","wind_ms":1.7,"dir_deg":315.0,"cloud_pct":0.8,"cloud_low_pct":0.0,"temp_c":13.1,"rain_6h_mm":0.0},{"loc":"target:thompsons-point","time":"2026-11-06T18:00:00Z","wind_ms":2.6,"dir_deg":302.2,"cloud_pct":0.0,"cloud_low_pct":0.0,"temp_c":11.6,"rain_6h_mm":0.0},{"loc":"target:thompsons-point","time":"2026-11-07T00:00:00Z","wind_ms":4.4,"dir_deg":237.2,"cloud_pct":33.6,"cloud_low_pct":0.0,"temp_c":24.2,"rain_6h_mm":7.3},{"loc":"target:thompsons-point","time":"2026-11-07T06:00:00Z","wind_ms":6.4,"dir_deg":174.9,"cloud_pct":100.0,"cloud_low_pct":98.4,"temp_c":15.8,"rain_6h_mm":0.0},{"loc":"target:thompsons-point","time":"2026-11-07T12:00:00Z","wind_ms":4.6,"dir_deg":200.8,"cloud_pct":100.0,"cloud_low_pct":2.3,"temp_c":13.5,"rain_6h_mm":0.0},{"loc":"target:thompsons-point","time":"2026-11-07T18:00:00Z","wind_ms":2.5,"dir_deg":251.4,"cloud_pct":9.4,"cloud_low_pct":8.6,"temp_c":8.3,"rain_6h_mm":0.2},{"loc":"target:thompsons-point","time":"2026-11-08T00:00:00Z","wind_ms":5.1,"dir_deg":180.6,"cloud_pct":47.7,"cloud_low_pct":20.3,"temp_c":16.0,"rain_6h_mm":0.7},{"loc":"target:thompsons-point","time":"2026-11-08T06:00:00Z","wind_ms":4.9,"dir_deg":171.6,"cloud_pct":11.7,"cloud_low_pct":4.7,"temp_c":16.4,"rain_6h_mm":0.0},{"loc":"target:thompsons-point","time":"2026-11-08T12:00:00Z","wind_ms":2.3,"dir_deg":268.7,"cloud_pct":18.7,"cloud_low_pct":12.5,"temp_c":10.6,"rain_6h_mm":0.0},{"loc":"target:thompsons-point","time":"2026-11-08T18:00:00Z","wind_ms":2.3,"dir_deg":288.7,"cloud_pct":62.5,"cloud_low_pct":16.4,"temp_c":9.0,"rain_6h_mm":0.0},{"loc":"target:thompsons-point","time":"2026-11-09T00:00:00Z","wind_ms":3.2,"dir_deg":177.6,"cloud_pct":43.7,"cloud_low_pct":43.0,"temp_c":18.8,"rain_6h_mm":0.0},{"loc":"target:thompsons-point","time":"2026-11-09T06:00:00Z","wind_ms":2.9,"dir_deg":145.5,"cloud_pct":68.0,"cloud_low_pct":57.0,"temp_c":18.5,"rain_6h_mm":0.0},{"loc":"target:thompsons-point","time":"2026-11-09T12:00:00Z","wind_ms":1.4,"dir_deg":291.6,"cloud_pct":7.8,"cloud_low_pct":7.8,"temp_c":10.6,"rain_6h_mm":0.0},{"loc":"target:thompsons-point","time":"2026-11-09T18:00:00Z","wind_ms":1.7,"dir_deg":297.0,"cloud_pct":85.2,"cloud_low_pct":68.7,"temp_c":7.9,"rain_6h_mm":0.0},{"loc":"target:thompsons-point","time":"2026-11-10T00:00:00Z","wind_ms":2.4,"dir_deg":75.1,"cloud_pct":36.7,"cloud_low_pct":0.8,"temp_c":21.2,"rain_6h_mm":0.0},{"loc":"target:thompsons-point","time":"2026-11-10T06:00:00Z","wind_ms":2.6,"dir_deg":80.3,"cloud_pct":100.0,"cloud_low_pct":0.0,"temp_c":23.3,"rain_6h_mm":0.1},{"loc":"target:thompsons-point","time":"2026-11-10T12:00:00Z","wind_ms":0.3,"dir_deg":205.2,"cloud_pct":97.7,"cloud_low_pct":0.8,"temp_c":16.4,"rain_6h_mm":0.0},{"loc":"target:thompsons-point","time":"2026-11-10T18:00:00Z","wind_ms":2.3,"dir_deg":270.0,"cloud_pct":52.3,"cloud_low_pct":10.2,"temp_c":14.2,"rain_6h_mm":0.0},{"loc":"target:thompsons-point","time":"2026-11-11T00:00:00Z","wind_ms":5.2,"dir_deg":285.8,"cloud_pct":97.7,"cloud_low_pct":0.0,"temp_c":24.2,"rain_6h_mm":0.0},{"loc":"target:thompsons-point","time":"2026-11-11T06:00:00Z","wind_ms":5.3,"dir_deg":265.5,"cloud_pct":0.0,"cloud_low_pct":0.0,"temp_c":25.5,"rain_6h_mm":0.0}];window.__GUIDE=[{"id":"bangor","doc":"r2qwm1qmcimgf9ibz1pb","grp":"target","sort":1,"big":false,"name":"Bangor West","place":"Sutherland Shire","drive":"about 45 min","forecast":"Target target:bangor-west","point":"Bangor West","short":"Crag, grade 10 to 24, mainly sport","climbing":"About 100 routes, grade 10 to 24, mainly sport. Some are above grade 20.","pick_why":"You added this crag on 15 October.","approach":"Fire trail from the end of Arunta Close, then a steep scramble down the gully.","know":"Respect the signposted Aboriginal site closures."},{"id":"grudge","doc":"","grp":"rec","sort":2,"big":false,"name":"The Grudge","place":"Mt Ku-ring-gai","drive":"about 1 hr","forecast":"Climbing berowra","point":"Berowra, shared with Mt Ku-ring-gai","short":"Grade 18, bolted, Moto Cross Wall","climbing":"Grade 18, bolted, on Moto Cross Wall.","pick_why":"Solid grade for a first bolted climb here, at the crag that best suits leading at your level. I found no rating for it, so this is on grade and style.","approach":"Park at the end of Beaumont Road and take the Gundah Ridge track. Cairns mark the turn-offs, though some get knocked over.","know":"Few scary clips overall, and the crag suits budding leaders."},{"id":"newways","doc":"","grp":"rec","sort":3,"big":false,"name":"New Ways of Living","place":"Mt Ku-ring-gai","drive":"about 1 hr","forecast":"Climbing berowra","point":"Berowra, shared with Mt Ku-ring-gai","short":"Grade 20, bolted, Faraway Wall","climbing":"Grade 20, bolted, on Faraway Wall.","pick_why":"Your upper limit on bolts, for a harder go on the same day as The Grudge. I found no rating for it, so this is on grade and style.","approach":"Park at the end of Beaumont Road and take the Gundah Ridge track. Cairns mark the turn-offs, though some get knocked over.","know":"Few scary clips overall, and the crag suits budding leaders."},{"id":"whorl","doc":"","grp":"rec","sort":4,"big":false,"name":"The Whorl","place":"Bangor West","drive":"about 45 min","forecast":"Target target:bangor-west","point":"Bangor West","short":"Grade 17, 10 m, bolted, Main Wall","climbing":"Grade 17, 10 m, on the Main Wall. Clip and go lower-off.","pick_why":"Short and bolted at your closest crag, so it works as a warm-up or an after-work climb. I found no rating for it.","approach":"Fire trail from the end of Arunta Close, then a steep scramble down the gully.","know":"Respect the signposted Aboriginal site closures."},{"id":"eggrings","doc":"","grp":"rec","sort":5,"big":false,"name":"Egg Rings","place":"Bangor West","drive":"about 45 min","forecast":"Target target:bangor-west","point":"Bangor West","short":"Grade 18, 10 m, bolted, Main Wall","climbing":"Grade 18, 10 m, on the Main Wall. Bolted with U-bolts.","pick_why":"One grade up from The Whorl on the same wall, so the two pair well. I found no rating for it.","approach":"Fire trail from the end of Arunta Close, then a steep scramble down the gully.","know":"Respect the signposted Aboriginal site closures."},{"id":"bandoline","doc":"","grp":"rec","sort":6,"big":false,"name":"The Bandoline Grip","place":"Shipley Upper","drive":"about 2 hrs","forecast":"Climbing blackheath","point":"Blackheath, shared with Shipley Upper and Bardens Lookout","short":"Grade 18, sport, rated 2.5 stars","climbing":"Grade 18 sport, rated 2.5 stars from 10 votes on Mountain Project.","pick_why":"The best-backed grade 18 I found, and a good reason to make the drive.","approach":"Park on Centennial Glen Road, take the main track to the cliff line, go down the stone steps, turn left and follow the track about 200 m.","know":"The first climbs you reach are steep and hard, so keep walking for the easier grades. Very busy on weekends."},{"id":"hotflyer","doc":"","grp":"rec","sort":7,"big":false,"name":"Original Hot Flyer","place":"Shipley Upper","drive":"about 2 hrs","forecast":"Climbing blackheath","point":"Blackheath, shared with Shipley Upper and Bardens Lookout","short":"Grade 19, sport, rated 3 stars","climbing":"Grade 19 sport, rated 3 stars on Mountain Project, though with no vote count shown.","pick_why":"A good step up after The Bandoline Grip on the same day.","approach":"Park on Centennial Glen Road, take the main track to the cliff line, go down the stone steps, turn left and follow the track about 200 m.","know":"The first climbs you reach are steep and hard, so keep walking for the easier grades. Very busy on weekends."},{"id":"jackhigh","doc":"","grp":"rec","sort":8,"big":false,"name":"Jack High","place":"Shipley Upper","drive":"about 2 hrs","forecast":"Climbing blackheath","point":"Blackheath, shared with Shipley Upper and Bardens Lookout","short":"Grade 20, sport, rated 2.5 stars","climbing":"Grade 20 sport, rated 2.5 stars from 14 votes on Mountain Project.","pick_why":"The most-voted route in your range at this crag, and right at your upper limit.","approach":"Park on Centennial Glen Road, take the main track to the cliff line, go down the stone steps, turn left and follow the track about 200 m.","know":"The first climbs you reach are steep and hard, so keep walking for the easier grades. Very busy on weekends."},{"id":"descent","doc":"1r0al781axe78tp0yvop","grp":"target","sort":9,"big":false,"name":"Descent Gully Walls","place":"Thompson's Point, Nowra","drive":"about 2.5 hrs","forecast":"Target target:thompsons-point","point":"Thompson's Point","short":"Sector, 39 routes, mostly 17 to 23","climbing":"39 sport routes to about 14 m, mostly grade 17 to 23. Many are harder than 20.","pick_why":"You added this sector on 10 October.","approach":"Steep walk-in of under 5 minutes from the end of Jonsson Road.","know":"No camping, and Mini Wall is closed. Respect access closures around Nowra."},{"id":"samurai","doc":"","grp":"rec","sort":10,"big":false,"name":"Samurai Pizza Catz","place":"Thompson's Point, Nowra","drive":"about 2.5 hrs","forecast":"Target target:thompsons-point","point":"Thompson's Point","short":"Grade 18, 15 m, two stars, Descent Gully Walls","climbing":"Grade 18, 15 m, two stars on theCrag, on Descent Gully Walls.","pick_why":"A strong route in your range inside a sector you already want to visit. Check it is bolted before you go, as the page does not say.","approach":"Steep walk-in of under 5 minutes from the end of Jonsson Road.","know":"No camping, and Mini Wall is closed. Respect access closures around Nowra."},{"id":"finslappers","doc":"lpxo7au3fuq9axib8e48","grp":"target","sort":11,"big":true,"name":"Big fat fin slappers","place":"Scarborough Cliffs, Wollongong","drive":"about 1 hr 10","forecast":"Target target:scarborough-cliffs","point":"Scarborough Cliffs","short":"Grade 18, 3 to 4 pitches, 50 m","climbing":"Multi-pitch sport, grade 18, 3 to 4 pitches and 50 m on Obesity Buttress.","pick_why":"You added this route on 11 October.","approach":"Abseil in from the cliff-top track.","know":"Morning sun. Dense jungle at the base, so leave a rope fixed."},{"id":"whale","doc":"u7si0cz9f1t6fx8zkv6g","grp":"target","sort":12,"big":true,"name":"Whale of a time","place":"Scarborough Cliffs, Wollongong","drive":"about 1 hr 10","forecast":"Target target:scarborough-cliffs","point":"Scarborough Cliffs","short":"Adventure route, grade to confirm","climbing":"Classic adventure route on Whale of a Time Wall. No grade saved yet.","pick_why":"You added this route on 15 October.","approach":"Cliff-top forest path, a short loose gully, then a 35 m abseil to the base.","know":"Commit to the abseil only once you have confirmed the grade."},{"id":"bunny","doc":"teyks0sjch84ab3wqekr","grp":"target","sort":13,"big":true,"name":"Bunny's bucket","place":"Pierces Pass, Blue Mountains","drive":"about 2 hrs 15","forecast":"Target target:pierces-pass","point":"Pierces Pass","short":"Grade 18, 8 pitches, 270 m","climbing":"Grade 18 on Bunny Bucket Buttress, 8 pitches and 270 m in the Grose Valley.","pick_why":"You added this route on 11 October.","approach":"Walk down Pierces Pass, then about 100 m of abseils to the base, and climb out.","know":"Allow a full day."},{"id":"berowra","doc":"","grp":"crag","sort":14,"big":false,"name":"Berowra","place":"North Sydney","drive":"about 1 hr","forecast":"Climbing berowra","point":"Berowra, shared with Mt Ku-ring-gai","short":"Crag, sport and trad, sunny most of the day","climbing":"Sport and trad, from short crimpy climbs to juggy overhanging routes.","pick_why":"One of the four default crags on your dashboard. I have no route picked here yet.","approach":"End of Wideview Road, about 150 m along the fire trail, then left down a concrete section to the track below Pimple Buttress.","know":"In the sun most of the day, with shade early and late, so it runs hot in summer."},{"id":"bardens","doc":"","grp":"crag","sort":15,"big":false,"name":"Bardens Lookout","place":"Blue Mountains","drive":"about 2 hrs","forecast":"Climbing blackheath","point":"Blackheath, shared with Shipley Upper and Bardens Lookout","short":"Crag, high teens to mid 20s","climbing":"High teens to mid 20s. Good sport routes and a few lines on natural gear.","pick_why":"One of the four default crags on your dashboard. It sits at the top of your range, so I have no route picked here yet.","approach":"Track to the right of the lookout, down Barden's Gully. Left at the bottom for Jean Jenie and Electric Blue.","know":"Collit's Crevasse and Lawson's Gully can no longer be reached from the main stairway."}];window.__CLIMBERS=[{"id":"kyle","name":"Kyle","ascents":8,"hardest_grade":"17","hardest_route":"Ted Turd-Tossa","distance_m":90,"styles":"Sport 100%","as_of":"3 Nov 2026"},{"id":"maria","name":"Maria","ascents":63,"hardest_grade":"21","hardest_route":"Necropolis Kidney","distance_m":968,"styles":"Sport 87%, trad 12%","as_of":"3 Nov 2026"}];</script><script>(function () {
+  var store = { forecast: window.__SNAPSHOT, climb_guide: window.__GUIDE, climbers: window.__CLIMBERS };
+  var calcs = {}, memo = {}, fns = [];
+  window.dash = {
+    calc: function (id, c) { calcs[id] = c; },
+    data: function (id) {
+      if (calcs[id]) {
+        if (!(id in memo)) memo[id] = calcs[id].fn.apply(null, calcs[id].inputs.map(function (i) { return dash.data(i).data; }));
+        return { status: 'ok', data: memo[id] };
+      }
+      return store[id] ? { status: 'ok', data: store[id] } : { status: 'missing', data: [] };
+    },
+    onData: function (fn) { fns.push(fn); fn(); },
+    redraw: function (rows) { store.forecast = rows; memo = {}; fns.forEach(function (f) { f(); }); }
+  };
+})();
+</script><script>dash.calc('outlook', {
+  title: 'Go, maybe or no by sport',
+  description:
+    'Each day and site checked against the wind, rain, cloud and temperature limits for that sport. Saved climbing targets use the climbing limits. Winds are converted from m/s to knots.',
+  inputs: ['forecast'],
+  fn: (forecast) => {
+    const KN = 1.94384;
+    const fmt = new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'Australia/Sydney', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', hourCycle: 'h23',
+    });
+    const local = (t) => {
+      const p = Object.fromEntries(fmt.formatToParts(new Date(t)).map((x) => [x.type, x.value]));
+      return { date: `${p.year}-${p.month}-${p.day}`, hour: Number(p.hour) % 24 };
+    };
+    const num = (x) => (x === null || x === undefined || x === '' ? null : Number(x));
+    const days = {};
+    for (const r of forecast) {
+      const l = local(r.time);
+      const d = ((days[r.loc] ||= {})[l.date] ||= { pts: [], rain: {} });
+      if (l.hour >= 7 && l.hour <= 17) {
+        d.pts.push({ hour: l.hour, kn: num(r.wind_ms) * KN, dir: num(r.dir_deg), low: num(r.cloud_low_pct), temp: num(r.temp_c) });
+      }
+      const rain = num(r.rain_6h_mm);
+      if (rain !== null && new Date(r.time).getUTCHours() % 6 === 0) {
+        d.rain[l.hour < 9 ? 'am' : l.hour < 15 ? 'pm' : l.hour < 21 ? 'eve' : 'night'] = rain;
+      }
+    }
+    const COMPASS = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
+    const compass = (deg) => COMPASS[Math.round(deg / 45) % 8];
+    const top = (pts) => pts.reduce((a, b) => (b.kn > a.kn ? b : a), pts[0]);
+    const dayBefore = (date) => new Date(Date.parse(date + 'T00:00:00Z') - 864e5).toISOString().slice(0, 10);
+    const read = (loc, date) => {
+      const d = days[loc] && days[loc][date];
+      if (!d || !d.pts.length) return null;
+      const peak = top(d.pts);
+      const pm = d.pts.filter((p) => p.hour >= 10);
+      const pmPeak = pm.length ? top(pm) : peak;
+      const before = days[loc][dayBefore(date)];
+      const slots = before ? Object.values(before.rain) : [];
+      return {
+        wind: Math.round(peak.kn), dir: compass(peak.dir),
+        pmWind: Math.round(pmPeak.kn), pmDir: compass(pmPeak.dir),
+        low: Math.round(d.pts.reduce((s, p) => s + (p.low || 0), 0) / d.pts.length),
+        temp: Math.round(Math.max(...d.pts.map((p) => p.temp))),
+        rain: Math.round(((d.rain.am || 0) + (d.rain.pm || 0)) * 10) / 10,
+        rainBefore: slots.length >= 3 ? Math.round(slots.reduce((s, x) => s + x, 0) * 10) / 10 : null,
+      };
+    };
+
+    const skydive = (d) => {
+      if (d.wind > 15) return ['no', `${d.wind} kn ${d.dir} is over the 15 kn student limit`];
+      if (d.rain >= 2) return ['no', `${d.rain} mm of rain through the day`];
+      if (d.low >= 70) return ['no', `${d.low}% low cloud, and students cannot jump through cloud`];
+      if (d.wind > 10) return ['maybe', `${d.wind} kn ${d.dir} is inside the limit, but gusts could bring a wind hold`];
+      if (d.low >= 35) return ['maybe', `${d.wind} kn ${d.dir}, but ${d.low}% low cloud may mean holds`];
+      if (d.rain >= 0.3) return ['maybe', `${d.wind} kn ${d.dir}, with showers about (${d.rain} mm)`];
+      return ['go', `${d.wind} kn ${d.dir}, ${d.low}% low cloud, dry`];
+    };
+    const SPOTS = {
+      N: 'Kurnell (Silver Beach)', NE: 'Kurnell or Dolls Point', E: 'Kyeemagh or Dolls Point',
+      SE: 'Dolls Point, Ramsgate or Wanda', S: 'Dolls Point, Ramsgate or Wanda',
+      SW: 'Botany Bay south shore', W: 'Kurnell (Silver Beach)', NW: 'Kurnell (Silver Beach)',
+    };
+    const kite = (d) => {
+      const w = d.pmWind;
+      if (w >= 35) return ['no', `${w} kn ${d.pmDir} is too strong`];
+      if (w < 12) return ['no', `Peaks at ${w} kn ${d.pmDir}, well short of 15 kn`];
+      if (w < 15) return ['maybe', `Peaks at ${w} kn ${d.pmDir}. Marginal, though sea breezes often beat the forecast`];
+      if (w >= 30) return ['maybe', `${w} kn ${d.pmDir}. Strong, small kite only`];
+      if (d.pmDir === 'W' || d.pmDir === 'SW') return ['maybe', `${w} kn ${d.pmDir}. Enough wind, but gusty off the land`];
+      if (d.rain >= 5) return ['maybe', `${w} kn ${d.pmDir}, with ${d.rain} mm of rain and squalls likely`];
+      return ['go', `${w} kn ${d.pmDir} in the afternoon`];
+    };
+    const climb = (d) => {
+      if (d.rain >= 2) return ['no', `${d.rain} mm of rain, sandstone will be wet`];
+      if (d.rainBefore !== null && d.rainBefore >= 10) return ['no', `${d.rainBefore} mm fell the day before. Wet sandstone is weak and needs a day or two to dry`];
+      if (d.rain >= 0.3) return ['maybe', `Showers about (${d.rain} mm), ${d.temp}°C`];
+      if (d.rainBefore !== null && d.rainBefore >= 2) return ['maybe', `${d.rainBefore} mm fell the day before, so rock may still be damp`];
+      if (d.temp >= 30) return ['maybe', `Dry but ${d.temp}°C. Go early and stay in the shade`];
+      if (d.temp < 10) return ['maybe', `Dry but only ${d.temp}°C`];
+      if (d.wind >= 25) return ['maybe', `Dry but ${d.wind} kn ${d.dir} at the crag`];
+      return ['go', `Dry, ${d.temp}°C, ${d.wind} kn ${d.dir}` + (d.rainBefore === null ? '. Check the rock is dry from earlier rain' : '')];
+    };
+    const tennis = (d) => {
+      if (d.rain >= 1.5) return ['no', `${d.rain} mm of rain`];
+      if (d.wind >= 25) return ['no', `${d.wind} kn ${d.dir} is too windy`];
+      if (d.rain >= 0.3) return ['maybe', `Showers about (${d.rain} mm), courts may be wet`];
+      if (d.wind >= 17) return ['maybe', `Dry but breezy, ${d.wind} kn ${d.dir}`];
+      if (d.temp >= 33) return ['maybe', `Dry but ${d.temp}°C, play early or late`];
+      return ['go', `Dry, ${d.temp}°C, ${d.wind} kn ${d.dir}`];
+    };
+
+    const SITES = [
+      ['Skydiving', 'Picton', 'picton', skydive],
+      ['Skydiving', 'Moruya', 'moruya', skydive],
+      ['Kiteboarding', '', 'botany', kite],
+      ['Climbing', 'Berowra or Mt Ku-ring-gai', 'berowra', climb],
+      ['Climbing', 'Blue Mountains (Shipley Upper, Bardens Lookout)', 'blackheath', climb],
+      ['Tennis', 'Sydney', 'sydney', tennis],
+    ];
+    const dates = [...new Set(Object.values(days).flatMap((d) => Object.keys(d)))].sort();
+    const targets = [...new Set(forecast.map((r) => String(r.loc)).filter((l) => l.startsWith('target:')))];
+    const out = [];
+    for (const date of dates) {
+      for (const loc of targets) {
+        const d = read(loc, date);
+        if (!d) continue;
+        const [status, reason] = climb(d);
+        out.push({
+          key: `${date} Target ${loc}`, date, sport: 'Target', site: loc, status, reason,
+          wind_kn: d.wind, wind_dir: d.dir, rain_mm: d.rain, rain_day_before_mm: d.rainBefore, low_cloud_pct: d.low, temp_c: d.temp,
+        });
+      }
+      for (const [sport, site, loc, rule] of SITES) {
+        const d = read(loc, date);
+        if (!d) continue;
+        const [status, reason] = rule(d);
+        const kiting = sport === 'Kiteboarding';
+        out.push({
+          key: `${date} ${sport} ${loc}`, date, sport, site: kiting ? SPOTS[d.pmDir] : site, status, reason,
+          wind_kn: kiting ? d.pmWind : d.wind, wind_dir: kiting ? d.pmDir : d.dir,
+          rain_mm: d.rain, rain_day_before_mm: d.rainBefore, low_cloud_pct: d.low, temp_c: d.temp,
+        });
+      }
+    }
+    return out;
+  },
+});
+
+dash.calc('sydney', {
+  title: 'Sydney weather by day',
+  description: 'Daytime (7 am to 5 pm) cloud, top temperature and rain for Sydney city, summed up as one word for the feel of the day.',
+  inputs: ['forecast'],
+  fn: (forecast) => {
+    const fmt = new Intl.DateTimeFormat('en-CA', { timeZone: 'Australia/Sydney', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', hourCycle: 'h23' });
+    const days = {};
+    for (const r of forecast) {
+      if (r.loc !== 'sydney') continue;
+      const p = Object.fromEntries(fmt.formatToParts(new Date(r.time)).map((x) => [x.type, x.value]));
+      const date = `${p.year}-${p.month}-${p.day}`;
+      const hour = Number(p.hour) % 24;
+      const d = (days[date] ||= { cloud: [], temp: [], rain: 0 });
+      if (hour >= 7 && hour <= 17) {
+        if (r.cloud_pct !== null) d.cloud.push(Number(r.cloud_pct));
+        if (r.temp_c !== null) d.temp.push(Number(r.temp_c));
+      }
+      if (r.rain_6h_mm !== null && new Date(r.time).getUTCHours() % 6 === 0 && hour >= 5 && hour < 15) d.rain += Number(r.rain_6h_mm);
+    }
+    return Object.entries(days).filter(([, d]) => d.temp.length).sort().map(([date, d]) => {
+      const cloud = Math.round(d.cloud.reduce((a, b) => a + b, 0) / Math.max(d.cloud.length, 1));
+      const temp = Math.round(Math.max(...d.temp));
+      const rain = Math.round(d.rain * 10) / 10;
+      const sky = rain >= 5 ? 'Rainy' : rain >= 1 ? 'Showers' : cloud >= 75 ? 'Overcast' : cloud >= 35 ? 'Partly cloudy' : 'Sunny';
+      return { date, sky, temp_c: temp, cloud_pct: cloud, rain_mm: rain };
+    });
+  },
+});
+
+dash.calc('picks', {
+  title: 'Best pick each day',
+  description:
+    'The first adventure sport showing go, in the order kiteboarding, skydiving, climbing. Tennis when none is a go. Otherwise the best maybe.',
+  inputs: ['outlook'],
+  fn: (outlook) => {
+    const RANK = { go: 0, maybe: 1, no: 2 };
+    const ORDER = ['Kiteboarding', 'Skydiving', 'Climbing', 'Tennis'];
+    const dates = [...new Set(outlook.map((r) => r.date))].sort();
+    return dates.map((date) => {
+      const best = ORDER.map((sport) =>
+        outlook.filter((r) => r.date === date && r.sport === sport).sort((a, b) => RANK[a.status] - RANK[b.status])[0],
+      ).filter(Boolean);
+      const pick = best.find((r) => r.status === 'go') || best.find((r) => r.status === 'maybe');
+      if (!pick) return { date, pick: 'Rest day', site: '', status: 'no', why: 'Nothing is workable' };
+      return { date, pick: pick.sport, site: pick.site, status: pick.status, why: pick.reason };
+    });
+  },
+});
+
+(() => {
+  const root = document.querySelector('.af');
+  const takeaway = root.querySelector('.af-takeaway');
+  const matrix = root.querySelector('.af-matrix tbody');
+  const cards = root.querySelector('.af-days');
+  const SPORTS = ['Skydiving', 'Kiteboarding', 'Climbing', 'Tennis'];
+  const WORD = { go: 'Go', maybe: 'Maybe', no: 'No' };
+  const climbNames = new Map();
+  const climbLabel = (loc) => climbNames.get(loc) || loc.replace(/^target:/, '').replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+  const COURTS = [
+    ['Book Mutch Park', 'https://www.mutchparksports.com.au/book-a-court/tennis/'],
+    ['Book Heffron Park', 'https://heffronparktennis.com.au/book-a-court/'],
+  ];
+  const RANK = { go: 0, maybe: 1, no: 2 };
+  const el = (tag, cls, text) => {
+    const n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text !== undefined) n.textContent = text;
+    return n;
+  };
+  const light = (status, label) => {
+    const s = el('span', `af-light af-${status}`);
+    s.append(el('span', 'af-dot'), el('span', 'af-word', label || WORD[status]));
+    return s;
+  };
+  const today = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'Australia/Sydney' }).format(new Date());
+  const dayName = (date, style) =>
+    new Intl.DateTimeFormat('en-AU', { timeZone: 'UTC', weekday: style, day: 'numeric', month: 'short' }).format(new Date(date + 'T00:00:00Z'));
+  const weekday = (date) => new Date(date + 'T00:00:00Z').getUTCDay();
+  const phrase = (p) => (p.pick + (p.site && p.pick !== 'Tennis' ? ` at ${p.site}` : '')).replace(/^./, (c) => c.toLowerCase());
+
+  const tList = root.querySelector('.af-targets');
+  const tInput = root.querySelector('.af-target-input');
+  const tAdd = root.querySelector('.af-target-add');
+  const tMsg = root.querySelector('.af-target-msg');
+  const tEntry = root.querySelector('.af-target-entry');
+  const state = { db: null, climbs: null, saving: false };
+  const HELP = 'Saving is not available in this view. Ask Claude to add the climb for you.';
+
+  const drawTargets = () => {
+    const o = dash.data('outlook');
+    const scored = o.status === 'ok' && Array.isArray(o.data) ? o.data.filter((r) => r.sport === 'Target') : [];
+    const from = today();
+    const dates = [...new Set((o.status === 'ok' && Array.isArray(o.data) ? o.data : []).map((r) => r.date))]
+      .filter((d) => d >= from).sort().slice(0, 7);
+    tList.replaceChildren();
+    if (state.climbs === null) return;
+    if (!state.climbs.length) {
+      tList.append(el('li', 'af-target-empty', 'Nothing saved yet. Add a crag, or a route with its crag, and the next morning refresh will find it and forecast it.'));
+      return;
+    }
+    state.climbs.forEach((c) => {
+      const li = el('li', 'af-target');
+      const top = el('div', 'af-target-top');
+      const name = el('div', 'af-target-name');
+      name.append(el('span', 'af-sport', String(c.name || '')));
+      const meta = [c.crag, c.area, c.grade ? `grade ${c.grade}` : '', c.style].filter(Boolean).map(String).join(', ');
+      if (meta) name.append(el('span', 'af-site', meta));
+      const gone = el('button', 'af-remove', 'Remove');
+      gone.type = 'button';
+      gone.setAttribute('aria-label', `Remove ${c.name || 'climb'}`);
+      gone.addEventListener('click', () => {
+        gone.disabled = true;
+        state.db.collection('climbs').doc(c.id).delete().catch(() => {
+          gone.disabled = false;
+          tMsg.textContent = HELP;
+        });
+      });
+      top.append(name, gone);
+      li.append(top);
+      if (c.notes) li.append(el('p', 'af-why', String(c.notes)));
+      const mine = c.loc ? scored.filter((r) => r.site === c.loc) : [];
+      if (c.status === 'unresolved') {
+        li.append(el('p', 'af-queued', 'Could not place this one. Remove it and add it again with the crag name.'));
+      } else if (!mine.length) {
+        li.append(el('p', 'af-queued', 'Queued. Details and lights arrive with the next 5:50 am refresh.'));
+      } else {
+        const strip = el('div', 'af-strip');
+        dates.forEach((date) => {
+          const r = mine.find((x) => x.date === date);
+          if (!r) return;
+          const chip = el('span', 'af-chip');
+          chip.append(el('span', 'af-chip-day', date === from ? 'Today' : dayName(date, 'short').split(' ')[0]), light(r.status));
+          strip.append(chip);
+        });
+        li.append(strip);
+        const best = dates.map((d) => mine.find((x) => x.date === d)).filter(Boolean);
+        const pick = best.find((r) => r.status === 'go') || best.find((r) => r.status === 'maybe');
+        li.append(el('p', 'af-why', pick
+          ? `Best day: ${pick.date === from ? 'today' : dayName(pick.date, 'long').split(' ')[0]}. ${pick.reason}.`
+          : 'No workable day in the next week.'));
+      }
+      tList.append(li);
+    });
+  };
+
+  const addTarget = async () => {
+    const name = tInput.value.trim().slice(0, 120);
+    if (!name || !state.db || state.saving) return;
+    state.saving = true;
+    tAdd.disabled = true;
+    tMsg.textContent = '';
+    try {
+      await state.db.collection('climbs').add({ name, status: 'new', added: new Date().toISOString() });
+      tInput.value = '';
+    } catch (e) {
+      tMsg.textContent = e && e.code === 'quota_exceeded' ? 'The list is full. Remove a climb first.' : HELP;
+    }
+    state.saving = false;
+    tAdd.disabled = false;
+  };
+  tAdd.addEventListener('click', addTarget);
+  tInput.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter') addTarget();
+  });
+
+  (async () => {
+    let db = null;
+    try {
+      db = globalThis.claude && typeof globalThis.claude.use === 'function' ? await globalThis.claude.use('db') : null;
+    } catch (e) {
+      db = null;
+    }
+    if (!db) {
+      tEntry.hidden = true;
+      tMsg.textContent = HELP;
+      state.climbs = [];
+      drawTargets();
+      return;
+    }
+    state.db = db;
+    db.collection('climbs').limit(100).onSnapshot(
+      (snap) => {
+        state.climbs = snap.docs
+          .map((d) => ({ id: d.id, ...(d.data() || {}) }))
+          .sort((a, b) => String(a.added || '').localeCompare(String(b.added || '')));
+        climbNames.clear();
+        state.climbs.forEach((c) => { if (c.loc && !climbNames.has(c.loc)) climbNames.set(c.loc, String(c.crag || c.name || '')); });
+        drawTargets();
+        drawClimbing();
+      },
+      () => {
+        tEntry.hidden = true;
+        tMsg.textContent = HELP;
+      },
+    );
+  })();
+
+  const cBody = root.querySelector('.af-climbing-body');
+  const cPick = { date: null, id: null };
+  const CLIMB_GROUPS = [
+    ['target', 'Our targets', 'The climbs you have added to the dashboard.'],
+    ['rec', 'Claude recommends', 'Bolted single-pitch climbs at grade 20 and under, at crags you can reach in a day.'],
+    ['crag', 'Other crags', 'On your default list, with no route picked yet.'],
+  ];
+  const dotOnly = (status) => {
+    const s = el('span', `af-light af-${status}`);
+    s.append(el('span', 'af-dot'));
+    return s;
+  };
+  const climbList = () => {
+    const g = dash.data('climb_guide');
+    const guide = g.status === 'ok' && Array.isArray(g.data) ? g.data : [];
+    const byDoc = new Map(guide.filter((r) => r.doc).map((r) => [r.doc, r]));
+    const targets = state.db && state.climbs
+      ? state.climbs.map((c) => byDoc.get(c.id) || {
+        id: c.id, grp: 'target', sort: 50, big: /multi-pitch/.test(String(c.style || '')), name: String(c.name || ''),
+        place: [c.crag, c.area].filter(Boolean).map(String).join(', '), drive: '', forecast: c.loc ? `Target ${c.loc}` : '',
+        point: String(c.crag || ''), short: [c.grade ? `Grade ${c.grade}` : '', c.style].filter(Boolean).map(String).join(', '),
+        climbing: String(c.notes || ''), pick_why: 'You added this to your targets.', approach: '', know: '',
+      })
+      : guide.filter((r) => r.grp === 'target');
+    return [...targets, ...guide.filter((r) => r.grp !== 'target')];
+  };
+  const climbsFor = (date, list, rows) => list
+    .map((c) => {
+      const r = rows.get(`${date} ${c.forecast}`);
+      return { c, status: r ? r.status : null, why: r ? r.reason : 'No forecast yet' };
+    })
+    .sort((a, b) => (a.status ? RANK[a.status] : 3) - (b.status ? RANK[b.status] : 3)
+      || (a.c.grp === 'crag' ? 1 : 0) - (b.c.grp === 'crag' ? 1 : 0)
+      || Number(a.c.sort) - Number(b.c.sort));
+  const fact = (label, text) => {
+    const d = el('div', 'af-fact');
+    d.append(el('span', 'af-fact-k', label), el('span', '', text));
+    return d;
+  };
+  const drawClimbing = () => {
+    const o = dash.data('outlook');
+    const g = dash.data('climb_guide');
+    const focused = document.activeElement && document.activeElement.dataset ? document.activeElement.dataset.cid : null;
+    cBody.classList.toggle('dash-skeleton', o.status === 'loading' || g.status === 'loading');
+    cBody.replaceChildren();
+    const ok = o.status === 'ok' && Array.isArray(o.data) && g.status === 'ok';
+    if (!ok) {
+      if (o.status === 'error' || g.status === 'error') cBody.append(el('p', 'af-note', 'Failed to load'));
+      return;
+    }
+    const from = today();
+    const dates = [...new Set(o.data.map((r) => r.date))].filter((d) => d >= from).sort().slice(0, 7);
+    if (!dates.length) return;
+    if (!dates.includes(cPick.date)) { cPick.date = dates[0]; cPick.id = null; }
+    const date = cPick.date;
+    const rows = new Map(o.data.map((r) => [r.key, r]));
+    const list = climbList();
+    const order = climbsFor(date, list, rows);
+    const top = order[0];
+    const chosen = order.find((r) => r.c.id === cPick.id) || top;
+    if (!top) return;
+    const pickDay = (d, id) => { cPick.date = d; cPick.id = id; drawClimbing(); };
+    cards.querySelectorAll('.af-card').forEach((n) => n.classList.toggle('af-picked', n.dataset.date === date));
+
+    const chips = el('div', 'af-chips');
+    chips.setAttribute('role', 'group');
+    chips.setAttribute('aria-label', 'Day');
+    dates.forEach((d) => {
+      const t = climbsFor(d, list, rows)[0];
+      const b = el('button', 'af-chipbtn' + (d === date ? ' af-on' : ''));
+      b.type = 'button';
+      b.dataset.cid = `day-${d}`;
+      b.setAttribute('aria-pressed', String(d === date));
+      if (t && t.status) b.append(dotOnly(t.status));
+      b.append(el('span', '', d === from ? 'Today' : dayName(d, 'short')));
+      b.addEventListener('click', () => pickDay(d, null));
+      chips.append(b);
+    });
+    cBody.append(chips);
+
+    const lead = el('div', 'af-lead');
+    const named = (r) => r.c.name + (r.c.grp === 'crag' || !r.c.place ? '' : ` at ${r.c.place}`);
+    lead.append(el('p', 'af-lead-main', top.status === 'go' ? `Climb ${named(top)}.` : top.status === 'maybe' ? `Best chance is ${named(top)}.` : 'No climbing this day.'));
+    lead.append(el('p', 'af-note', `${top.why}.`));
+    const tags = el('div', 'af-strip');
+    if (weekday(date) === 3) tags.append(el('span', 'af-arty-tag', 'Busy day'));
+    if (dates.indexOf(date) >= 5) tags.append(el('span', 'af-tag', 'Less certain'));
+    lead.append(tags);
+    cBody.append(lead);
+
+    CLIMB_GROUPS.forEach(([id, title, note]) => {
+      const items = order.filter((r) => r.c.grp === id);
+      if (!items.length) return;
+      const group = el('div', 'af-cgroup');
+      group.append(el('h3', 'af-cgroup-h', title), el('p', 'af-note', note));
+      const grid = el('div', 'af-climbs');
+      items.forEach((r) => {
+        const b = el('button', 'af-climb' + (r === chosen ? ' af-on' : '') + (r.status === 'no' ? ' af-dim' : ''));
+        b.type = 'button';
+        b.dataset.cid = r.c.id;
+        b.setAttribute('aria-pressed', String(r === chosen));
+        const head = el('span', 'af-climb-top');
+        head.append(el('span', 'af-climb-name', String(r.c.name)));
+        if (r.status) head.append(light(r.status));
+        b.append(head);
+        const where = [r.c.place, r.c.drive].filter(Boolean).map(String).join(', ');
+        if (where) b.append(el('span', 'af-site', where));
+        if (r.c.short) b.append(el('span', 'af-site', String(r.c.short)));
+        if (r === top && (r.status === 'go' || r.status === 'maybe')) {
+          const wrap = el('span');
+          wrap.append(el('span', 'af-arty-tag af-top-tag', 'Top pick'));
+          b.append(wrap);
+        }
+        b.addEventListener('click', () => pickDay(date, r.c.id));
+        grid.append(b);
+      });
+      group.append(grid);
+      cBody.append(group);
+    });
+
+    const detail = el('div', 'af-detail');
+    detail.setAttribute('aria-live', 'polite');
+    const head = el('div', 'af-detail-head');
+    head.append(el('h3', 'af-card-title', `${chosen.c.name}, ${date === from ? 'today' : dayName(date, 'short')}`));
+    if (chosen.status) head.append(light(chosen.status));
+    if (String(chosen.c.big) === 'true') head.append(el('span', 'af-tag', 'Big day, multi-pitch'));
+    detail.append(head, el('p', 'af-why-big', `${chosen.why}.`));
+    const facts = el('div', 'af-facts');
+    if (chosen.c.climbing) facts.append(fact('The climb', String(chosen.c.climbing)));
+    if (chosen.c.pick_why) facts.append(fact(chosen.c.grp === 'rec' ? 'Why Claude picked it' : 'Why it is here', String(chosen.c.pick_why)));
+    if (chosen.c.approach) facts.append(fact('Getting in', String(chosen.c.approach)));
+    if (chosen.c.know) facts.append(fact('Know before you go', String(chosen.c.know)));
+    detail.append(facts);
+    const week = el('div', 'af-chips');
+    dates.forEach((d) => {
+      const r = rows.get(`${d} ${chosen.c.forecast}`);
+      const b = el('button', 'af-chipbtn' + (d === date ? ' af-on' : ''));
+      const dn = d === from ? 'Today' : dayName(d, 'short').split(' ')[0].replace(',', '');
+      b.type = 'button';
+      b.dataset.cid = `week-${d}`;
+      b.setAttribute('aria-label', `${dn}: ${r ? WORD[r.status] : 'no forecast'}`);
+      if (r) b.append(dotOnly(r.status));
+      b.append(el('span', '', dn));
+      b.addEventListener('click', () => pickDay(d, chosen.c.id));
+      week.append(b);
+    });
+    const wrap = el('div', 'af-cgroup');
+    wrap.append(el('p', 'af-note', `This climb, next seven days.${chosen.c.point ? ` Forecast from ${chosen.c.point}.` : ''}`), week);
+    detail.append(wrap);
+    cBody.append(detail);
+
+    if (focused) {
+      const again = [...cBody.querySelectorAll('button')].find((n) => n.dataset.cid === focused);
+      if (again) again.focus({ preventScroll: true });
+    }
+  };
+  cards.addEventListener('click', (event) => {
+    if (event.target.closest('a, button')) return;
+    const card = event.target.closest('.af-card');
+    if (!card || !card.dataset.date) return;
+    cPick.date = card.dataset.date;
+    cPick.id = null;
+    drawClimbing();
+    const section = document.getElementById('climbing');
+    if (section) section.scrollIntoView({ block: 'start' });
+  });
+
+  dash.onData(() => {
+    drawTargets();
+    const o = dash.data('outlook');
+    const p = dash.data('picks');
+    const wx = dash.data('sydney');
+    const tb = dash.data('tennis');
+    const booked = new Set(tb.status === 'ok' && Array.isArray(tb.data) ? tb.data.filter((r) => String(r.court_booked) === 'true').map((r) => String(r.date).slice(0, 10)) : []);
+    const partnered = new Set(tb.status === 'ok' && Array.isArray(tb.data) ? tb.data.filter((r) => String(r.partner_hit) === 'true').map((r) => String(r.date).slice(0, 10)) : []);
+    const weather = new Map(wx.status === 'ok' && Array.isArray(wx.data) ? wx.data.map((r) => [r.date, r]) : []);
+    const SKY = { Sunny: '☀', 'Partly cloudy': '⛅', Overcast: '☁', Showers: '🌦', Rainy: '🌧' };
+    const ready = o.status === 'ok' && p.status === 'ok' && Array.isArray(o.data) && o.data.length;
+    root.querySelectorAll('.af-wait').forEach((n) => n.classList.toggle('dash-skeleton', o.status === 'loading'));
+    matrix.replaceChildren();
+    cards.replaceChildren();
+    if (!ready) {
+      takeaway.textContent = o.status === 'loading' ? '' : 'The forecast has not loaded, so there are no lights to show yet.';
+      return;
+    }
+    const from = today();
+    const dates = [...new Set(o.data.map((r) => r.date))].filter((d) => d >= from).sort().slice(0, 7);
+    const picks = new Map(p.data.map((r) => [r.date, r]));
+    if (!dates.length) {
+      takeaway.textContent = 'The saved forecast is out of date, and the live forecast has not loaded.';
+      return;
+    }
+
+    const weekend = dates.filter((d) => weekday(d) === 6 || weekday(d) === 0);
+    const say = (d) => {
+      const k = picks.get(d);
+      const name = d === from ? 'Today' : dayName(d, 'long').split(' ')[0];
+      if (!k || k.status === 'no') return `${name} looks like a rest day`;
+      return `${name} ${k.status === 'go' ? 'is a go for' : 'is a maybe for'} ${phrase(k)}`;
+    };
+    takeaway.textContent = (weekend.length ? weekend : dates.slice(0, 2)).map(say).join('. ') + '.';
+
+    dates.forEach((date, i) => {
+      const all = o.data.filter((r) => r.date === date);
+      const climbs = all.filter((r) => r.sport === 'Climbing' || r.sport === 'Target')
+        .sort((a, b) => RANK[a.status] - RANK[b.status] || (a.sport === 'Target' ? -1 : 0) - (b.sport === 'Target' ? -1 : 0));
+      const bestClimb = climbs[0];
+      const rows = [];
+      all.forEach((r) => {
+        if (r.sport === 'Target') return;
+        if (r.sport !== 'Climbing') { rows.push(r); return; }
+        if (r !== climbs.find((c) => c.sport === 'Climbing')) return;
+        if (!bestClimb) return;
+        if (bestClimb.status === 'no') rows.push({ ...bestClimb, sport: 'Climbing', site: '' });
+        else rows.push({ ...bestClimb, sport: 'Climbing', site: bestClimb.sport === 'Target' ? climbLabel(bestClimb.site) : bestClimb.site });
+      });
+      const pick = picks.get(date);
+      const arty = weekday(date) === 3;
+      const tr = el('tr', (i >= 5 ? 'af-far' : '') + (arty ? ' af-arty' : ''));
+      const th = el('th', 'af-day', date === from ? 'Today' : dayName(date, 'short'));
+      th.scope = 'row';
+      if (arty) th.append(el('span', 'af-arty-tag', 'Busy day'));
+      tr.append(th);
+      const wc = el('td', 'af-wx');
+      const w = weather.get(date);
+      if (w) {
+        const icon = el('span', 'af-wx-icon', SKY[w.sky] || '');
+        icon.setAttribute('aria-hidden', 'true');
+        wc.append(icon, el('span', 'af-wx-text', `${w.sky}, ${w.temp_c}°`));
+        wc.title = `${w.cloud_pct}% cloud, ${w.rain_mm} mm rain, 7 am to 5 pm`;
+      }
+      tr.append(wc);
+      const pc = el('td');
+      if (pick) pc.append(light(pick.status, pick.pick));
+      tr.append(pc);
+      SPORTS.forEach((sport) => {
+        const best = rows.filter((r) => r.sport === sport).sort((a, b) => RANK[a.status] - RANK[b.status])[0];
+        const td = el('td');
+        if (best) td.append(light(best.status));
+        tr.append(td);
+      });
+      matrix.append(tr);
+
+      const card = el('section', 'af-card' + (i >= 5 ? ' af-far' : '') + (arty ? ' af-arty' : ''));
+      card.dataset.date = date;
+      const head = el('div', 'af-card-head');
+      const title = el('h3', 'af-card-title', date === from ? `Today, ${dayName(date, 'short')}` : dayName(date, 'long'));
+      head.append(title);
+      if (arty) head.append(el('span', 'af-arty-tag', 'Busy day'));
+      if (i >= 5) head.append(el('span', 'af-tag', 'Less certain'));
+      card.append(head);
+      if (pick) {
+        const best = el('p', 'af-best');
+        best.append(light(pick.status, pick.pick), el('span', 'af-best-why', pick.site && pick.pick !== 'Tennis' ? pick.site : ''));
+        card.append(best);
+      }
+      const list = el('ul', 'af-list');
+      rows.forEach((r) => {
+        const li = el('li', 'af-row');
+        const what = el('div', 'af-what');
+        what.append(el('span', 'af-sport', r.sport), el('span', 'af-site', r.site));
+        li.append(light(r.status), what, el('p', 'af-why', r.reason));
+        if (r.sport === 'Tennis') {
+          if (tb.status === 'ok') li.append(el('p', 'af-booked', `Court Booked: ${booked.has(date) ? 'Yes' : 'No'}`));
+          if (tb.status === 'ok') li.append(el('p', 'af-booked', `Partner Hit: ${partnered.has(date) ? 'Yes' : 'No'}`));
+          const book = el('p', 'af-book');
+          COURTS.forEach(([label, href]) => {
+            const link = el('a', 'af-link', label);
+            link.href = href;
+            link.target = '_blank';
+            link.rel = 'noopener';
+            book.append(link);
+          });
+          li.append(book);
+        }
+        list.append(li);
+      });
+      card.append(list);
+      cards.append(card);
+    });
+  });
+  dash.onData(drawClimbing);
+  dash.onData(() => {
+    const c = dash.data('climbers');
+    const people = c.status === 'ok' && Array.isArray(c.data) ? c.data : [];
+    root.querySelectorAll('.af-pv').forEach((n) => {
+      const id = new URLSearchParams(n.dataset.where || '').get('id');
+      const row = id ? people.find((r) => r.id === id) : people[0];
+      n.textContent = row ? String(row[n.dataset.field]) : '—';
+    });
+  });
+})();
+</script><script>(function () {
+  var POINTS = {
+    picton: [-34.25, 150.62], moruya: [-35.9, 150.14], botany: [-33.99, 151.15], sydney: [-33.88, 151.2],
+    berowra: [-33.62, 151.15], blackheath: [-33.63, 150.28], 'target:thompsons-point': [-34.87, 150.58],
+    'target:scarborough-cliffs': [-34.26, 150.96], 'target:bangor-west': [-34.02, 151.03], 'target:pierces-pass': [-33.58, 150.34]
+  };
+  var HOURS = [0, 3, 6, 12, 18, 21];
+  var note = document.getElementById('af-fc');
+  var get = function (loc) {
+    var p = POINTS[loc];
+    return fetch('https://api.met.no/weatherapi/locationforecast/2.0/complete?lat=' + p[0] + '&lon=' + p[1])
+      .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+      .then(function (j) {
+        return j.properties.timeseries.filter(function (t) { return HOURS.indexOf(new Date(t.time).getUTCHours()) >= 0; }).slice(0, 48).map(function (t) {
+          var d = t.data.instant.details, six = t.data.next_6_hours;
+          return { loc: loc, time: t.time, wind_ms: d.wind_speed, dir_deg: d.wind_from_direction, cloud_pct: d.cloud_area_fraction, cloud_low_pct: d.cloud_area_fraction_low, temp_c: d.air_temperature, rain_6h_mm: six ? six.details.precipitation_amount : null };
+        });
+      });
+  };
+  var locs = Object.keys(POINTS);
+  Promise.all(locs.map(function (l) { return get(l).catch(function () { return null; }); })).then(function (res) {
+    var ok = res.filter(Boolean).length;
+    if (!ok) { note.textContent = 'Live forecast unavailable. Showing the forecast saved on 3 Nov 2026.'; return; }
+    var rows = [];
+    locs.forEach(function (l, i) { rows = rows.concat(res[i] || window.__SNAPSHOT.filter(function (r) { return r.loc === l; })); });
+    dash.redraw(rows);
+    note.textContent = ok === locs.length ? 'Live forecast from MET Norway.' : 'Live forecast from MET Norway for ' + ok + ' of ' + locs.length + ' sites.';
+  });
+})();
+</script></body></html>
